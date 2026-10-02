@@ -1,0 +1,55 @@
+# NOTE: Service definitions are stubs. Real implementations land in Section 4.
+# `docker compose config` validates successfully, but services do nothing yet.
+
+name: jit-iam-portal
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    profiles: ["full"]
+    environment:
+      POSTGRES_USER: jit
+      POSTGRES_PASSWORD: jit
+      POSTGRES_DB: jit
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    profiles: ["full"]
+    ports:
+      - "6379:6379"
+
+  opa:
+    image: openpolicyagent/opa:latest
+    profiles: ["full"]
+    command: ["run", "--server", "--addr=0.0.0.0:8181", "/policies"]
+    volumes:
+      - ./policies:/policies:ro
+    ports:
+      - "8181:8181"
+
+  backend:
+    build: ./backend
+    profiles: ["full"]
+    env_file: .env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+      - redis
+      - opa
+
+  frontend:
+    build: ./frontend
+    profiles: ["full"]
+    env_file: .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

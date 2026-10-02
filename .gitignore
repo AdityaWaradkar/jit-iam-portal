@@ -1,0 +1,65 @@
+# ---------- OS ----------
+.DS_Store
+Thumbs.db
+*.swp
+*~
+
+# ---------- Editors ----------
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+*.iml
+
+# ---------- Env / Secrets ----------
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+secrets/
+
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+htmlcov/
+.coverage
+coverage.xml
+
+# ---------- Node / Next.js ----------
+node_modules/
+.next/
+out/
+dist/
+build/
+.turbo/
+*.tsbuildinfo
+npm-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ---------- Terraform ----------
+**/.terraform/*
+*.tfstate
+*.tfstate.*
+crash.log
+crash.*.log
+*.tfvars
+*.tfvars.json
+override.tf
+override.tf.json
+.terraform.lock.hcl
+.terraformrc
+terraform.rc
+
+# ---------- Logs / Runtime ----------
+logs/
+*.log
+audit-logs/
+tmp/
