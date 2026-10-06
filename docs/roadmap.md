@@ -2,7 +2,7 @@
 
 ## Phase 1 — Foundation
 - [x] 1. Repo scaffolding & docs
-- [ ] 2. Backend skeleton (FastAPI)
+- [x] 2. Backend skeleton (FastAPI)
 - [ ] 3. Frontend skeleton (Next.js)
 - [ ] 4. Docker Compose local stack
 - [ ] 5. DB schema + seed
