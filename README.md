@@ -4,7 +4,7 @@
 
 Eliminate static credentials. Enforce Zero Standing Privileges. Grant access only when needed, and revoke it automatically.
 
-[![CI](https://github.com/<YOUR_USERNAME>/jit-iam-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/<YOUR_USERNAME>/jit-iam-portal/actions/workflows/ci.yml)
+[![CI](https://github.com/adityawaradkar/jit-iam-portal/actions/workflows/ci.yml/badge.svg)](https://github.com/<YOUR_USERNAME>/jit-iam-portal/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 [![Next.js](https://img.shields.io/badge/Next.js-black?logo=next.js)](https://nextjs.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-009688?logo=fastapi)](https://fastapi.tiangolo.com/)
@@ -174,7 +174,7 @@ Released under the MIT License. See [`LICENSE`](./LICENSE).
 
 ## Author
 
-**<YOUR NAME>**
+**Aditya Waradkar**
 
 - Portfolio : [@adityawaradkar](https://adityawaradkar-gamma.vercel.app/)
 - LinkedIn : [in/adityawaradkar](https://www.linkedin.com/in/aditya-waradkar-9a03b92a5/)
