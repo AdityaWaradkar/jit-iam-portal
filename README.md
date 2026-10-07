@@ -148,18 +148,6 @@ jit-iam-portal/
 
 ---
 
-## Roadmap
-
-- [x] **Section 1** : Repository scaffolding and documentation
-- [ ] **Section 2** : FastAPI backend skeleton
-- [ ] **Section 3** : Next.js frontend skeleton
-- [ ] **Section 4** : Docker Compose local stack
-- [ ] **Section 5** : Database schema and seed data
-
-Full roadmap: [`docs/roadmap.md`](./docs/roadmap.md).
-
----
-
 ## Contributing
 
 See [`CONTRIBUTING.md`](./CONTRIBUTING.md). This is primarily a portfolio project, but pull requests and issues are welcome.
