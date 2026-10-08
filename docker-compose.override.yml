@@ -1,0 +1,23 @@
+services:
+  backend:
+    volumes:
+      - ./backend/app:/app/app:ro
+    environment:
+      DEBUG: "true"
+    command:
+      - uvicorn
+      - app.main:app
+      - --host
+      - "0.0.0.0"
+      - --port
+      - "8000"
+      - --reload
+
+  frontend:
+    volumes:
+      - ./frontend/app:/app/app:ro
+      - ./frontend/components:/app/components:ro
+      - ./frontend/lib:/app/lib:ro
+      - ./frontend/public:/app/public:ro
+    environment:
+      NODE_ENV: development

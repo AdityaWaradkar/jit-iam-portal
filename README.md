@@ -105,13 +105,9 @@ For a detailed component breakdown and sequence diagrams, see [`docs/architectur
 git clone https://github.com/adityawaradkar/jit-iam-portal.git
 cd jit-iam-portal
 cp .env.example .env
-docker compose up --build
-```
+docker compose --profile full up --build
 
-Once running:
-
-- Frontend : http://localhost:3000
-- API documentation : http://localhost:8000/docs
+--- 
 
 ### Trying the Demo
 
