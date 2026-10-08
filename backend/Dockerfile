@@ -17,8 +17,10 @@ COPY pyproject.toml ./
 RUN pip install --upgrade pip \
     && pip install .
 
-# Copy application code
+# Copy application code and migration scaffolding
 COPY app ./app
+COPY alembic ./alembic
+COPY alembic.ini ./
 
 EXPOSE 8000
 

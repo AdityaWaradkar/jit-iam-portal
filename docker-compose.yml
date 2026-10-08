@@ -1,55 +1,112 @@
-# NOTE: Service definitions are stubs. Real implementations land in Section 4.
-# `docker compose config` validates successfully, but services do nothing yet.
-
 name: jit-iam-portal
 
 services:
   postgres:
     image: postgres:16-alpine
     profiles: ["full"]
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: jit
-      POSTGRES_PASSWORD: jit
-      POSTGRES_DB: jit
+      POSTGRES_USER: ${POSTGRES_USER:-jit}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-jit}
+      POSTGRES_DB: ${POSTGRES_DB:-jit}
     ports:
-      - "5432:5432"
+      - "${POSTGRES_PORT:-5432}:5432"
     volumes:
-      - pgdata:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-jit} -d ${POSTGRES_DB:-jit}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - jit-network
 
   redis:
     image: redis:7-alpine
     profiles: ["full"]
+    restart: unless-stopped
+    command: ["redis-server", "--appendonly", "yes"]
     ports:
-      - "6379:6379"
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    networks:
+      - jit-network
 
   opa:
     image: openpolicyagent/opa:latest
     profiles: ["full"]
-    command: ["run", "--server", "--addr=0.0.0.0:8181", "/policies"]
+    restart: unless-stopped
+    command:
+      - "run"
+      - "--server"
+      - "--addr=0.0.0.0:8181"
+      - "--log-level=info"
+      - "/policies"
+    ports:
+      - "${OPA_PORT:-8181}:8181"
     volumes:
       - ./policies:/policies:ro
-    ports:
-      - "8181:8181"
+    networks:
+      - jit-network
 
   backend:
-    build: ./backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
     profiles: ["full"]
-    env_file: .env
-    ports:
-      - "8000:8000"
+    restart: unless-stopped
     depends_on:
-      - postgres
-      - redis
-      - opa
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      opa:
+        condition: service_started
+    environment:
+      APP_ENV: ${APP_ENV:-development}
+      DEBUG: ${DEBUG:-true}
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-jit}:${POSTGRES_PASSWORD:-jit}@postgres:5432/${POSTGRES_DB:-jit}
+      REDIS_URL: redis://redis:6379/0
+      OPA_URL: http://opa:8181/v1/data/jit/allow
+      VAULT_ADDR: ${VAULT_ADDR:-http://vault:8200}
+      VAULT_TOKEN: ${VAULT_TOKEN:-dev-root-token}
+      JWT_SECRET: ${JWT_SECRET:-change-me-in-production}
+      JWT_EXPIRES_MINUTES: ${JWT_EXPIRES_MINUTES:-60}
+      DEMO_MODE: ${DEMO_MODE:-true}
+    ports:
+      - "${BACKEND_PORT:-8000}:8000"
+    networks:
+      - jit-network
 
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
     profiles: ["full"]
-    env_file: .env
-    ports:
-      - "3000:3000"
+    restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_started
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: ${NEXT_PUBLIC_API_BASE_URL:-http://localhost:8000}
+      NODE_ENV: production
+    ports:
+      - "${FRONTEND_PORT:-3000}:3000"
+    networks:
+      - jit-network
 
 volumes:
-  pgdata:
+  postgres-data:
+  redis-data:
+
+networks:
+  jit-network:
+    driver: bridge
