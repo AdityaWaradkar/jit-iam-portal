@@ -34,20 +34,20 @@ class User(UUIDMixin, TimestampMixin, Base):
     is_active: Mapped[bool] = mapped_column(default=True, nullable=False)
 
     # Relationships
-    requests: Mapped[list[AccessRequest]] = relationship(
+    requests: Mapped[list["AccessRequest"]] = relationship(
         back_populates="requester",
         foreign_keys="AccessRequest.requester_id",
         cascade="all, delete-orphan",
     )
-    approvals: Mapped[list[Approval]] = relationship(
+    approvals: Mapped[list["Approval"]] = relationship(
         back_populates="approver",
         cascade="all, delete-orphan",
     )
-    leases: Mapped[list[Lease]] = relationship(
+    leases: Mapped[list["Lease"]] = relationship(
         back_populates="user",
         cascade="all, delete-orphan",
     )
-    audit_events: Mapped[list[AuditEvent]] = relationship(
+    audit_events: Mapped[list["AuditEvent"]] = relationship(
         back_populates="actor",
         cascade="all, delete-orphan",
     )

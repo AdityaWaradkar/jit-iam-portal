@@ -17,6 +17,9 @@ dependencies = [
     "structlog",
     "python-json-logger",
     "httpx",
+    "pyjwt",
+    "passlib[bcrypt]",
+    "email-validator",
 ]
 
 [project.optional-dependencies]
@@ -48,3 +51,4 @@ addopts = "-ra --strict-markers"
 [tool.ruff.lint.per-file-ignores]
 "app/api/**/*.py" = ["B008"]
 "alembic/versions/*.py" = ["E501", "I001", "UP007", "UP035"]
+"app/db/models/*.py" = ["UP037", "TC001", "TC002", "TC003"]
