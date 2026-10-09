@@ -2,6 +2,8 @@ services:
   backend:
     volumes:
       - ./backend/app:/app/app:ro
+      - ./backend/alembic:/app/alembic
+      - ./backend/alembic.ini:/app/alembic.ini:ro
     environment:
       DEBUG: "true"
     command:
