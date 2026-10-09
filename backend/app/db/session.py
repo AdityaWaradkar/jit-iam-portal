@@ -7,6 +7,7 @@ from sqlalchemy.ext.asyncio import (
 )
 
 from app.core.config import get_settings
+from app.db import models  # noqa: F401  (ensures models are registered)
 
 settings = get_settings()
 
