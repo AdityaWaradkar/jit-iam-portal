@@ -64,20 +64,20 @@ class AccessRequest(UUIDMixin, TimestampMixin, Base):
     )
 
     # Relationships
-    requester: Mapped[User] = relationship(
+    requester: Mapped["User"] = relationship(
         back_populates="requests",
         foreign_keys=[requester_id],
     )
-    approvals: Mapped[list[Approval]] = relationship(
+    approvals: Mapped[list["Approval"]] = relationship(
         back_populates="request",
         cascade="all, delete-orphan",
     )
-    lease: Mapped[Lease | None] = relationship(
+    lease: Mapped["Lease | None"] = relationship(
         back_populates="request",
         uselist=False,
         cascade="all, delete-orphan",
     )
-    audit_events: Mapped[list[AuditEvent]] = relationship(
+    audit_events: Mapped[list["AuditEvent"]] = relationship(
         back_populates="request",
         cascade="all, delete-orphan",
     )

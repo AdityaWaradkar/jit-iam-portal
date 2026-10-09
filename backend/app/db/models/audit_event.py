@@ -40,8 +40,8 @@ class AuditEvent(UUIDMixin, TimestampMixin, Base):
     payload: Mapped[dict[str, Any]] = mapped_column(JSONB, nullable=False, default=dict)
 
     # Relationships
-    actor: Mapped[User | None] = relationship(back_populates="audit_events")
-    request: Mapped[AccessRequest | None] = relationship(
+    actor: Mapped["User | None"] = relationship(back_populates="audit_events")
+    request: Mapped["AccessRequest | None"] = relationship(
         back_populates="audit_events"
     )
-    lease: Mapped[Lease | None] = relationship(back_populates="audit_events")
+    lease: Mapped["Lease | None"] = relationship(back_populates="audit_events")

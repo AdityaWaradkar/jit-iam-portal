@@ -1,6 +1,6 @@
 "use client";
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { PersonaSwitcher } from "@/components/auth/persona-switcher";
 import { Badge } from "@/components/ui/badge";
 
 export function AppTopbar() {
@@ -12,17 +12,7 @@ export function AppTopbar() {
         </Badge>
       </div>
 
-      <div className="flex items-center gap-3">
-        <div className="text-right">
-          <p className="text-xs font-medium">Not signed in</p>
-          <p className="text-xs text-muted-foreground">
-            Persona switcher coming soon
-          </p>
-        </div>
-        <Avatar className="h-8 w-8">
-          <AvatarFallback>?</AvatarFallback>
-        </Avatar>
-      </div>
+      <PersonaSwitcher />
     </header>
   );
 }

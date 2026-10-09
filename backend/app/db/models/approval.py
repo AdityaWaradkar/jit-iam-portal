@@ -45,5 +45,5 @@ class Approval(UUIDMixin, TimestampMixin, Base):
     )
 
     # Relationships
-    request: Mapped[AccessRequest] = relationship(back_populates="approvals")
-    approver: Mapped[User] = relationship(back_populates="approvals")
+    request: Mapped["AccessRequest"] = relationship(back_populates="approvals")
+    approver: Mapped["User"] = relationship(back_populates="approvals")

@@ -1,3 +1,5 @@
+import { getToken } from "./auth";
+
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
 
@@ -28,11 +30,15 @@ export async function apiFetch<T>(
     headers.set("Content-Type", "application/json");
   }
 
+  const token = getToken();
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
   const response = await fetch(url, {
     ...options,
     headers,
-    body:
-      options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
     cache: "no-store",
   });
 
@@ -60,4 +66,33 @@ export type HealthResponse = {
 
 export function getHealth(): Promise<HealthResponse> {
   return apiFetch<HealthResponse>("/api/v1/health");
+}
+
+// --- Auth ---
+
+export type LoginResponse = {
+  access_token: string;
+  token_type: string;
+  expires_in_minutes: number;
+  user: {
+    id: string;
+    email: string;
+    full_name: string;
+    persona: string;
+  };
+};
+
+export function login(email: string, password = "demo"): Promise<LoginResponse> {
+  return apiFetch<LoginResponse>("/api/v1/auth/login", {
+    method: "POST",
+    body: { email, password },
+  });
+}
+
+export function getMe(): Promise<{ user: LoginResponse["user"] }> {
+  return apiFetch("/api/v1/auth/me");
+}
+
+export function logout(): Promise<void> {
+  return apiFetch("/api/v1/auth/logout", { method: "POST" });
 }
