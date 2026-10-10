@@ -34,11 +34,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Rehydrate session AFTER hydration completes.
   // This effect runs only in the browser, so localStorage is available.
   useEffect(() => {
-    if (getToken()) {
-      const cached = getUser();
-      if (cached) setUser(cached);
-    }
-    setReady(true);
+    let cancelled = false;
+
+    queueMicrotask(() => {
+      if (cancelled) return;
+      if (getToken()) {
+        const cached = getUser();
+        if (cached) setUser(cached);
+      }
+      setReady(true);
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const loginAs = useCallback(async (email: string) => {

@@ -5,6 +5,7 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from collections.abc import Awaitable, Callable
 
 from app.core.security import TokenError, decode_access_token
 from app.db.models import PersonaRole, User
@@ -61,10 +62,12 @@ async def get_current_user(
 CurrentUser = Annotated[User, Depends(get_current_user)]
 
 
-def require_persona(*allowed: PersonaRole):
-    """Dependency factory that ensures the current user has one of the allowed personas."""
+def require_persona(
+    *allowed: PersonaRole,
+) -> Callable[[User], Awaitable[User]]:
+    """Dependency factory ensuring the current user has one of the allowed personas."""
 
-    async def _checker(user: CurrentUser) -> User:
+    async def _checker(user: User) -> User:
         if user.persona not in allowed:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

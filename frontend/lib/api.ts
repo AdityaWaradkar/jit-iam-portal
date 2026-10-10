@@ -96,3 +96,63 @@ export function getMe(): Promise<{ user: LoginResponse["user"] }> {
 export function logout(): Promise<void> {
   return apiFetch("/api/v1/auth/logout", { method: "POST" });
 }
+
+// --- Access Requests ---
+
+export type Environment =
+  | "development"
+  | "staging"
+  | "production"
+  | "production-db";
+
+export type RequestStatus =
+  | "pending"
+  | "auto_approved"
+  | "approved"
+  | "denied"
+  | "expired"
+  | "revoked";
+
+export type AccessRequest = {
+  id: string;
+  requester_id: string;
+  environment: Environment;
+  requested_role: string;
+  duration_minutes: number;
+  justification: string;
+  status: RequestStatus;
+  policy_decision: string | null;
+  policy_reason: string | null;
+  decided_at: string | null;
+  created_at: string;
+  updated_at: string;
+};
+
+export type AccessRequestList = {
+  items: AccessRequest[];
+  total: number;
+};
+
+export type CreateAccessRequest = {
+  environment: Environment;
+  requested_role: string;
+  duration_minutes: number;
+  justification: string;
+};
+
+export function createAccessRequest(
+  payload: CreateAccessRequest,
+): Promise<AccessRequest> {
+  return apiFetch<AccessRequest>("/api/v1/access/requests", {
+    method: "POST",
+    body: payload,
+  });
+}
+
+export function listAccessRequests(): Promise<AccessRequestList> {
+  return apiFetch<AccessRequestList>("/api/v1/access/requests");
+}
+
+export function getAccessRequest(id: string): Promise<AccessRequest> {
+  return apiFetch<AccessRequest>(`/api/v1/access/requests/${id}`);
+}
