@@ -1,3 +1,4 @@
+from collections.abc import Awaitable, Callable
 from typing import Annotated
 from uuid import UUID
 
@@ -5,7 +6,6 @@ from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from collections.abc import Awaitable, Callable
 
 from app.core.security import TokenError, decode_access_token
 from app.db.models import PersonaRole, User

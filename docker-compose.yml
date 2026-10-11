@@ -73,7 +73,7 @@ services:
       DEBUG: ${DEBUG:-true}
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-jit}:${POSTGRES_PASSWORD:-jit}@postgres:5432/${POSTGRES_DB:-jit}
       REDIS_URL: redis://redis:6379/0
-      OPA_URL: http://opa:8181/v1/data/jit/allow
+      OPA_URL: http://opa:8181/v1/data/jit/decision
       VAULT_ADDR: ${VAULT_ADDR:-http://vault:8200}
       VAULT_TOKEN: ${VAULT_TOKEN:-dev-root-token}
       JWT_SECRET: ${JWT_SECRET:-change-me-in-production}

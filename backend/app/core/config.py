@@ -30,7 +30,7 @@ class Settings(BaseSettings):
     redis_url: str = Field(default="redis://localhost:6379/0", alias="REDIS_URL")
 
     # OPA (used in Section 8)
-    opa_url: str = Field(default="http://localhost:8181/v1/data/jit/allow", alias="OPA_URL")
+    opa_url: str = Field(default="http://opa:8181/v1/data/jit/decision", alias="OPA_URL")
 
     # Vault (used in Section 12)
     vault_addr: str = Field(default="http://localhost:8200", alias="VAULT_ADDR")

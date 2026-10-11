@@ -72,6 +72,12 @@ export function RequestList({ items }: { items: AccessRequest[] }) {
                 <p className="line-clamp-2 text-xs text-muted-foreground">
                   {request.justification}
                 </p>
+                {request.policy_reason && (
+                  <p className="mt-2 rounded border border-border bg-secondary/50 p-2 text-xs text-muted-foreground">
+                    <span className="font-medium">Policy:</span>{" "}
+                    {request.policy_reason}
+                  </p>
+                )}
               </div>
               <Badge variant={STATUS_VARIANT[request.status]}>
                 {REQUEST_STATUS_LABEL[request.status] ?? request.status}
