@@ -5,6 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.api.v1.schemas.access import AccessRequestCreate
 from app.core.audit_types import AuditEventType
+from app.core.opa import evaluate_access_request
 from app.db.models import (
     AccessRequest,
     AuditEvent,
@@ -12,23 +13,46 @@ from app.db.models import (
     User,
 )
 
+_DECISION_TO_STATUS: dict[str, RequestStatus] = {
+    "allow": RequestStatus.AUTO_APPROVED,
+    "requires_approval": RequestStatus.PENDING,
+    "deny": RequestStatus.DENIED,
+}
+
 
 async def create_access_request(
     db: AsyncSession,
     requester: User,
     payload: AccessRequestCreate,
 ) -> AccessRequest:
+    # 1. Evaluate policy
+    policy_input = {
+        "environment": payload.environment.value,
+        "requested_role": payload.requested_role,
+        "duration_minutes": payload.duration_minutes,
+        "justification": payload.justification,
+        "requester_persona": requester.persona.value,
+    }
+    decision = await evaluate_access_request(policy_input)
+
+    # 2. Map decision to status
+    status = _DECISION_TO_STATUS.get(decision.decision, RequestStatus.PENDING)
+
+    # 3. Persist the request
     request = AccessRequest(
         requester_id=requester.id,
         environment=payload.environment,
         requested_role=payload.requested_role,
         duration_minutes=payload.duration_minutes,
         justification=payload.justification,
-        status=RequestStatus.PENDING,
+        status=status,
+        policy_decision=decision.decision,
+        policy_reason=decision.reason,
     )
     db.add(request)
-    await db.flush()  # assigns the id
+    await db.flush()
 
+    # 4. Audit events
     db.add(
         AuditEvent(
             event_type=AuditEventType.REQUEST_CREATED,
@@ -41,6 +65,37 @@ async def create_access_request(
             },
         )
     )
+    db.add(
+        AuditEvent(
+            event_type=AuditEventType.POLICY_EVALUATED,
+            actor_id=requester.id,
+            request_id=request.id,
+            payload={
+                "decision": decision.decision,
+                "reason": decision.reason,
+            },
+        )
+    )
+
+    if status == RequestStatus.AUTO_APPROVED:
+        db.add(
+            AuditEvent(
+                event_type=AuditEventType.REQUEST_AUTO_APPROVED,
+                actor_id=requester.id,
+                request_id=request.id,
+                payload={"decision": decision.decision},
+            )
+        )
+    elif status == RequestStatus.DENIED:
+        db.add(
+            AuditEvent(
+                event_type=AuditEventType.REQUEST_DENIED,
+                actor_id=requester.id,
+                request_id=request.id,
+                payload={"reason": decision.reason},
+            )
+        )
+
     await db.commit()
     await db.refresh(request)
     return request
