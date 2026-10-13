@@ -67,7 +67,7 @@ def require_persona(
 ) -> Callable[[User], Awaitable[User]]:
     """Dependency factory ensuring the current user has one of the allowed personas."""
 
-    async def _checker(user: User) -> User:
+    async def _checker(user: User = Depends(get_current_user)) -> User:
         if user.persona not in allowed:
             raise HTTPException(
                 status_code=status.HTTP_403_FORBIDDEN,

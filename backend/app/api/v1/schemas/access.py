@@ -34,6 +34,8 @@ ALLOWED_ROLES: dict[Environment, list[str]] = {
     ],
 }
 
+class ApprovalAction(BaseModel):
+    reason: str = Field(default="", max_length=2000)
 
 class AccessRequestCreate(BaseModel):
     environment: Environment
