@@ -26,7 +26,13 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleString();
 }
 
-export function RequestList({ items }: { items: AccessRequest[] }) {
+export function RequestList({
+  items,
+  onSelect,
+}: {
+  items: AccessRequest[];
+  onSelect?: (request: AccessRequest) => void;
+}) {
   if (items.length === 0) {
     return (
       <Card>
@@ -49,9 +55,11 @@ export function RequestList({ items }: { items: AccessRequest[] }) {
       </CardHeader>
       <CardContent className="space-y-3">
         {items.map((request) => (
-          <div
+          <button
             key={request.id}
-            className="rounded-md border border-border p-3"
+            type="button"
+            onClick={() => onSelect?.(request)}
+            className="w-full rounded-md border border-border p-3 text-left transition-colors hover:bg-secondary/50"
           >
             <div className="flex items-start justify-between gap-4">
               <div className="space-y-1">
@@ -83,7 +91,7 @@ export function RequestList({ items }: { items: AccessRequest[] }) {
                 {REQUEST_STATUS_LABEL[request.status] ?? request.status}
               </Badge>
             </div>
-          </div>
+          </button>
         ))}
       </CardContent>
     </Card>
