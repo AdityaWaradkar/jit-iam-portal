@@ -156,3 +156,31 @@ export function listAccessRequests(): Promise<AccessRequestList> {
 export function getAccessRequest(id: string): Promise<AccessRequest> {
   return apiFetch<AccessRequest>(`/api/v1/access/requests/${id}`);
 }
+
+// --- Dashboard ---
+
+export type DashboardStatusCount = {
+  status: string;
+  count: number;
+};
+
+export type DashboardRecentEvent = {
+  id: string;
+  event_type: string;
+  request_id: string | null;
+  created_at: string;
+};
+
+export type DashboardSummary = {
+  total_requests: number;
+  requests_by_status: DashboardStatusCount[];
+  active_leases: number;
+  pending_approvals: number;
+  average_decision_seconds: number | null;
+  recent_events: DashboardRecentEvent[];
+  generated_at: string;
+};
+
+export function getDashboardSummary(): Promise<DashboardSummary> {
+  return apiFetch<DashboardSummary>("/api/v1/dashboard/summary");
+}

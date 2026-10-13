@@ -3,10 +3,9 @@ from uuid import UUID
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import AccessRequest, PersonaRole, RequestStatus, User
 from app.api.deps import require_persona
 from app.api.v1.schemas.access import AccessRequestRead, ApprovalAction
-from app.db.models import PersonaRole, RequestStatus, User
+from app.db.models import AccessRequest, PersonaRole, RequestStatus, User
 from app.db.session import get_db
 from app.services.access_requests import get_request
 from app.services.state_machine import transition_request
