@@ -1,4 +1,4 @@
-import { BackendStatus } from "@/components/dashboard/backend-status";
+import { DashboardView } from "@/components/dashboard/dashboard-view";
 
 export default function DashboardPage() {
   return (
@@ -6,11 +6,11 @@ export default function DashboardPage() {
       <div>
         <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
         <p className="text-sm text-muted-foreground">
-          Overview of active leases, pending approvals, and recent activity.
+          Overview of your access requests, active leases, and recent activity.
         </p>
       </div>
 
-      <BackendStatus />
+      <DashboardView />
     </div>
   );
 }
