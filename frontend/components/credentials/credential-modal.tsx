@@ -58,7 +58,8 @@ export function CredentialModal({ credential, onClose }: Props) {
   const isExpired = remaining <= 0;
 
   async function copyEnv() {
-    await navigator.clipboard.writeText(envBlock(credential!));
+    if (!credential) return;
+    await navigator.clipboard.writeText(envBlock(credential));
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   }
@@ -80,6 +81,13 @@ export function CredentialModal({ credential, onClose }: Props) {
             <Badge variant={isExpired ? "destructive" : "secondary"}>
               {formatRemaining(remaining)}
             </Badge>
+          </div>
+
+          <div className="flex items-center justify-between gap-4 text-xs">
+            <span className="text-muted-foreground">Assumed role</span>
+            <code className="rounded bg-secondary px-2 py-0.5 text-xs">
+              {credential.assumed_role_arn}
+            </code>
           </div>
 
           <div className="space-y-2">

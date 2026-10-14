@@ -244,6 +244,8 @@ export type IssueCredentialResponse = {
   issued_at: string;
   expires_at: string;
   duration_minutes: number;
+  assumed_role_arn: string;
+  assumed_role_name: string;
 };
 
 export function issueCredentials(
