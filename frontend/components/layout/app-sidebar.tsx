@@ -8,13 +8,28 @@ import {
   LayoutDashboard,
   ScrollText,
   ShieldCheck,
+  UserCheck,
 } from "lucide-react";
 
+import { useAuth } from "@/components/auth/auth-provider";
 import { cn } from "@/lib/utils";
 
-const navItems = [
+type NavItem = {
+  href: string;
+  label: string;
+  icon: typeof LayoutDashboard;
+  personas?: string[];
+};
+
+const navItems: NavItem[] = [
   { href: "/", label: "Dashboard", icon: LayoutDashboard },
   { href: "/requests", label: "Requests", icon: KeyRound },
+  {
+    href: "/approver",
+    label: "Approver",
+    icon: UserCheck,
+    personas: ["approver"],
+  },
   { href: "/leases", label: "Leases", icon: ShieldCheck },
   { href: "/audit", label: "Audit", icon: ScrollText },
   { href: "/demo", label: "Demo", icon: FlaskConical },
@@ -22,6 +37,13 @@ const navItems = [
 
 export function AppSidebar() {
   const pathname = usePathname();
+  const { user } = useAuth();
+
+  const visibleItems = navItems.filter((item) => {
+    if (!item.personas) return true;
+    if (!user) return false;
+    return item.personas.includes(user.persona);
+  });
 
   return (
     <aside className="hidden md:flex md:w-60 md:flex-col md:border-r md:border-border md:bg-card">
@@ -35,9 +57,11 @@ export function AppSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 p-3">
-        {navItems.map((item) => {
+        {visibleItems.map((item) => {
           const isActive =
-            item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+            item.href === "/"
+              ? pathname === "/"
+              : pathname.startsWith(item.href);
           const Icon = item.icon;
 
           return (
@@ -59,7 +83,9 @@ export function AppSidebar() {
       </nav>
 
       <div className="border-t border-border p-4">
-        <p className="text-xs text-muted-foreground">Zero Standing Privileges</p>
+        <p className="text-xs text-muted-foreground">
+          Zero Standing Privileges
+        </p>
       </div>
     </aside>
   );

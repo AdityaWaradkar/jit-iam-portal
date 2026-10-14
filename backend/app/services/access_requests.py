@@ -2,6 +2,7 @@ from uuid import UUID
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import joinedload
 
 from app.api.v1.schemas.access import AccessRequestCreate
 from app.core.audit_types import AuditEventType
@@ -121,3 +122,19 @@ async def get_request(
         select(AccessRequest).where(AccessRequest.id == request_id)
     )
     return result.scalar_one_or_none()
+
+async def list_pending_requests(
+    db: AsyncSession,
+) -> list[AccessRequest]:
+    """Return every PENDING request across all users, oldest first.
+
+    The requester is eager-loaded so the caller can build the pending
+    queue response without an extra query per row.
+    """
+    result = await db.execute(
+        select(AccessRequest)
+        .options(joinedload(AccessRequest.requester))
+        .where(AccessRequest.status == RequestStatus.PENDING)
+        .order_by(AccessRequest.created_at.asc())
+    )
+    return list(result.scalars().all())
