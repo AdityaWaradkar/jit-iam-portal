@@ -80,3 +80,12 @@ class AccessRequestRead(BaseModel):
 class AccessRequestList(BaseModel):
     items: list[AccessRequestRead]
     total: int
+
+class PendingRequestRead(AccessRequestRead):
+    requester_name: str
+    requester_email: str
+    requester_persona: str
+
+class PendingRequestList(BaseModel):
+    items: list[PendingRequestRead]
+    total: int

@@ -184,3 +184,52 @@ export type DashboardSummary = {
 export function getDashboardSummary(): Promise<DashboardSummary> {
   return apiFetch<DashboardSummary>("/api/v1/dashboard/summary");
 }
+
+// --- Approver ---
+
+export type PendingRequest = {
+  id: string;
+  requester_id: string;
+  environment: Environment;
+  requested_role: string;
+  duration_minutes: number;
+  justification: string;
+  status: RequestStatus;
+  policy_decision: string | null;
+  policy_reason: string | null;
+  decided_at: string | null;
+  created_at: string;
+  updated_at: string;
+  requester_name: string;
+  requester_email: string;
+  requester_persona: string;
+};
+
+export type PendingRequestList = {
+  items: PendingRequest[];
+  total: number;
+};
+
+export function listPendingRequests(): Promise<PendingRequestList> {
+  return apiFetch<PendingRequestList>("/api/v1/approver/pending");
+}
+
+export function approveRequest(
+  id: string,
+  reason = "",
+): Promise<{ status: string; request_id: string }> {
+  return apiFetch(`/api/v1/approver/requests/${id}/approve`, {
+    method: "POST",
+    body: { reason },
+  });
+}
+
+export function denyRequest(
+  id: string,
+  reason = "",
+): Promise<{ status: string; request_id: string }> {
+  return apiFetch(`/api/v1/approver/requests/${id}/deny`, {
+    method: "POST",
+    body: { reason },
+  });
+}
