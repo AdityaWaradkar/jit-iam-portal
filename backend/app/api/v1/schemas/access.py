@@ -98,3 +98,5 @@ class IssueCredentialResponse(BaseModel):
     issued_at: datetime
     expires_at: datetime
     duration_minutes: int
+    assumed_role_arn: str
+    assumed_role_name: str

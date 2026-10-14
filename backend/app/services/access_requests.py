@@ -8,7 +8,7 @@ from sqlalchemy.orm import joinedload
 
 from app.api.v1.schemas.access import AccessRequestCreate
 from app.core.audit_types import AuditEventType
-from app.core.credentials import IssuedCredential, get_issuer
+from app.core.credentials import CredentialError, IssuedCredential, get_issuer
 from app.core.opa import evaluate_access_request
 from app.db.models import (
     AccessRequest,
@@ -181,10 +181,17 @@ async def issue_credential_for_request(
         )
 
     issuer = get_issuer()
-    credential = issuer.issue(
-        requested_role=request.requested_role,
-        duration_minutes=request.duration_minutes,
-    )
+    try:
+        credential = issuer.issue(
+            requested_role=request.requested_role,
+            duration_minutes=request.duration_minutes,
+            requested_by=str(request.requester_id),
+        )
+    except CredentialError as exc:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=str(exc),
+        ) from exc
 
     lease = Lease(
         request_id=request.id,

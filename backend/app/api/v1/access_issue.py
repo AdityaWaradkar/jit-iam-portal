@@ -51,4 +51,6 @@ async def issue_credentials(
         issued_at=lease.issued_at,
         expires_at=lease.expires_at,
         duration_minutes=request.duration_minutes,
+        assumed_role_arn=credential.assumed_role.role_arn,
+        assumed_role_name=credential.assumed_role.role_name,
     )
