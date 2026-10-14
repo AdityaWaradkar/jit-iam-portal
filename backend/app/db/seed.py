@@ -130,6 +130,8 @@ async def reset_demo_data(session: AsyncSession) -> None:
         access_key_id="ASIAEXAMPLEKEY000001",
         secret_access_key_hash="demo-hash-secret-1",
         session_token_hash="demo-hash-session-token-1",
+        assumed_role_arn="arn:aws:iam::123456789012:role/ECS-ReadOnly",
+        assumed_role_name="ECS-ReadOnly",
         issued_at=now - timedelta(minutes=10),
         expires_at=now + timedelta(minutes=50),
         status=LeaseStatus.ACTIVE,

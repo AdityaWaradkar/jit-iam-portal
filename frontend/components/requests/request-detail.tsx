@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
 import { CredentialModal } from "@/components/credentials/credential-modal";
@@ -25,6 +26,7 @@ function formatDate(iso: string): string {
 export function RequestDetail({ request }: { request: AccessRequest }) {
   const [credential, setCredential] =
     useState<IssueCredentialResponse | null>(null);
+  const [leaseId, setLeaseId] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -37,6 +39,7 @@ export function RequestDetail({ request }: { request: AccessRequest }) {
     try {
       const data = await issueCredentials(request.id);
       setCredential(data);
+      setLeaseId(data.lease_id);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Issuance failed");
     } finally {
@@ -98,6 +101,17 @@ export function RequestDetail({ request }: { request: AccessRequest }) {
               </Button>
               {error && (
                 <p className="text-xs text-destructive">{error}</p>
+              )}
+              {leaseId && (
+                <p className="text-xs text-muted-foreground">
+                  Lease issued.{" "}
+                  <Link
+                    href="/leases"
+                    className="text-foreground underline"
+                  >
+                    View leases
+                  </Link>
+                </p>
               )}
             </div>
           )}
