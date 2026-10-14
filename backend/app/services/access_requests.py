@@ -1,15 +1,20 @@
+from datetime import UTC, datetime
 from uuid import UUID
 
+from fastapi import HTTPException, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
 from app.api.v1.schemas.access import AccessRequestCreate
 from app.core.audit_types import AuditEventType
+from app.core.credentials import IssuedCredential, get_issuer
 from app.core.opa import evaluate_access_request
 from app.db.models import (
     AccessRequest,
     AuditEvent,
+    Lease,
+    LeaseStatus,
     RequestStatus,
     User,
 )
@@ -37,7 +42,9 @@ async def create_access_request(
     decision = await evaluate_access_request(policy_input)
 
     # 2. Map decision to status
-    status = _DECISION_TO_STATUS.get(decision.decision, RequestStatus.PENDING)
+    status_value = _DECISION_TO_STATUS.get(
+        decision.decision, RequestStatus.PENDING
+    )
 
     # 3. Persist the request
     request = AccessRequest(
@@ -46,7 +53,7 @@ async def create_access_request(
         requested_role=payload.requested_role,
         duration_minutes=payload.duration_minutes,
         justification=payload.justification,
-        status=status,
+        status=status_value,
         policy_decision=decision.decision,
         policy_reason=decision.reason,
     )
@@ -78,7 +85,7 @@ async def create_access_request(
         )
     )
 
-    if status == RequestStatus.AUTO_APPROVED:
+    if status_value == RequestStatus.AUTO_APPROVED:
         db.add(
             AuditEvent(
                 event_type=AuditEventType.REQUEST_AUTO_APPROVED,
@@ -87,7 +94,7 @@ async def create_access_request(
                 payload={"decision": decision.decision},
             )
         )
-    elif status == RequestStatus.DENIED:
+    elif status_value == RequestStatus.DENIED:
         db.add(
             AuditEvent(
                 event_type=AuditEventType.REQUEST_DENIED,
@@ -123,6 +130,7 @@ async def get_request(
     )
     return result.scalar_one_or_none()
 
+
 async def list_pending_requests(
     db: AsyncSession,
 ) -> list[AccessRequest]:
@@ -138,3 +146,73 @@ async def list_pending_requests(
         .order_by(AccessRequest.created_at.asc())
     )
     return list(result.scalars().all())
+
+
+async def issue_credential_for_request(
+    db: AsyncSession,
+    request: AccessRequest,
+    actor_id: UUID,
+) -> tuple[Lease, IssuedCredential]:
+    """Issue ephemeral credentials for an approved request.
+
+    Writes a Lease row, a credential.issued audit event, and returns
+    the lease plus the plaintext credential.
+    """
+    if request.status not in (
+        RequestStatus.APPROVED,
+        RequestStatus.AUTO_APPROVED,
+    ):
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=(
+                f"Cannot issue credentials for a request in "
+                f"'{request.status.value}' status."
+            ),
+        )
+
+    # If a lease already exists for this request, refuse to issue again.
+    existing = await db.execute(
+        select(Lease).where(Lease.request_id == request.id)
+    )
+    if existing.scalar_one_or_none() is not None:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Credentials have already been issued for this request.",
+        )
+
+    issuer = get_issuer()
+    credential = issuer.issue(
+        requested_role=request.requested_role,
+        duration_minutes=request.duration_minutes,
+    )
+
+    lease = Lease(
+        request_id=request.id,
+        user_id=request.requester_id,
+        access_key_id=credential.access_key_id,
+        secret_access_key_hash=credential.secret_access_key_hash,
+        session_token_hash=credential.session_token_hash,
+        issued_at=datetime.now(UTC),
+        expires_at=credential.expires_at,
+        status=LeaseStatus.ACTIVE,
+    )
+    db.add(lease)
+    await db.flush()
+
+    db.add(
+        AuditEvent(
+            event_type=AuditEventType.CREDENTIAL_ISSUED,
+            actor_id=actor_id,
+            request_id=request.id,
+            lease_id=lease.id,
+            payload={
+                "access_key_id": credential.access_key_id,
+                "duration_minutes": request.duration_minutes,
+                "expires_at": credential.expires_at.isoformat(),
+            },
+        )
+    )
+
+    await db.commit()
+    await db.refresh(lease)
+    return lease, credential
