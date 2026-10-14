@@ -233,3 +233,24 @@ export function denyRequest(
     body: { reason },
   });
 }
+
+// --- Credentials ---
+
+export type IssueCredentialResponse = {
+  lease_id: string;
+  access_key_id: string;
+  secret_access_key: string;
+  session_token: string;
+  issued_at: string;
+  expires_at: string;
+  duration_minutes: number;
+};
+
+export function issueCredentials(
+  requestId: string,
+): Promise<IssueCredentialResponse> {
+  return apiFetch<IssueCredentialResponse>(
+    `/api/v1/access/requests/${requestId}/issue`,
+    { method: "POST" },
+  );
+}

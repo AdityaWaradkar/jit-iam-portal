@@ -89,3 +89,12 @@ class PendingRequestRead(AccessRequestRead):
 class PendingRequestList(BaseModel):
     items: list[PendingRequestRead]
     total: int
+
+class IssueCredentialResponse(BaseModel):
+    lease_id: UUID
+    access_key_id: str
+    secret_access_key: str
+    session_token: str
+    issued_at: datetime
+    expires_at: datetime
+    duration_minutes: int
