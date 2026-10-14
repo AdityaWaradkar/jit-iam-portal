@@ -199,6 +199,8 @@ async def issue_credential_for_request(
         access_key_id=credential.access_key_id,
         secret_access_key_hash=credential.secret_access_key_hash,
         session_token_hash=credential.session_token_hash,
+        assumed_role_arn=credential.assumed_role.role_arn,
+        assumed_role_name=credential.assumed_role.role_name,
         issued_at=datetime.now(UTC),
         expires_at=credential.expires_at,
         status=LeaseStatus.ACTIVE,
@@ -223,3 +225,24 @@ async def issue_credential_for_request(
     await db.commit()
     await db.refresh(lease)
     return lease, credential
+
+async def list_leases_for_user(
+    db: AsyncSession,
+    user_id: UUID,
+) -> list[Lease]:
+    result = await db.execute(
+        select(Lease)
+        .where(Lease.user_id == user_id)
+        .order_by(Lease.issued_at.desc())
+    )
+    return list(result.scalars().all())
+
+
+async def get_lease(
+    db: AsyncSession,
+    lease_id: UUID,
+) -> Lease | None:
+    result = await db.execute(
+        select(Lease).where(Lease.id == lease_id)
+    )
+    return result.scalar_one_or_none()

@@ -52,6 +52,12 @@ class Lease(UUIDMixin, TimestampMixin, Base):
     revoked_at: Mapped[datetime | None] = mapped_column(
         DateTime(timezone=True), nullable=True
     )
+    assumed_role_arn: Mapped[str | None] = mapped_column(
+        String(255), nullable=True
+    )
+    assumed_role_name: Mapped[str | None] = mapped_column(
+        String(128), nullable=True
+    )
 
     status: Mapped[LeaseStatus] = mapped_column(
         SAEnum(LeaseStatus, name="lease_status", native_enum=True),

@@ -256,3 +256,33 @@ export function issueCredentials(
     { method: "POST" },
   );
 }
+
+// --- Leases ---
+
+export type LeaseStatus = "active" | "expired" | "revoked";
+
+export type Lease = {
+  id: string;
+  request_id: string;
+  user_id: string;
+  access_key_id: string;
+  assumed_role_arn: string | null;
+  assumed_role_name: string | null;
+  issued_at: string;
+  expires_at: string;
+  revoked_at: string | null;
+  status: LeaseStatus;
+};
+
+export type LeaseList = {
+  items: Lease[];
+  total: number;
+};
+
+export function listLeases(): Promise<LeaseList> {
+  return apiFetch<LeaseList>("/api/v1/leases");
+}
+
+export function getLease(id: string): Promise<Lease> {
+  return apiFetch<Lease>(`/api/v1/leases/${id}`);
+}
