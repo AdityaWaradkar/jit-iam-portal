@@ -2,16 +2,32 @@
 
 import "@xterm/xterm/css/xterm.css";
 
-import { FitAddon } from "@xterm/addon-fit";
-import { Terminal as XTerm } from "@xterm/xterm";
 import { useEffect, useRef } from "react";
+import { Terminal as XTerm } from "@xterm/xterm";
+import { FitAddon } from "@xterm/addon-fit";
 
 import {
   runTerminalCommand,
   type IssueCredentialResponse,
 } from "@/lib/api";
 
-const PROMPT = "\x1b[32m$\x1b[0m ";
+const COLORS = {
+  prompt: "\x1b[38;2;120;220;150m",
+  promptRole: "\x1b[38;2;160;200;255m",
+  dim: "\x1b[38;2;130;130;140m",
+  error: "\x1b[38;2;235;100;100m",
+  system: "\x1b[38;2;200;180;120m",
+  reset: "\x1b[0m",
+};
+
+const SUPPORTED = [
+  "  aws sts get-caller-identity    Show the assumed role identity",
+  "  aws s3 ls                      List sample buckets",
+  "  whoami                         Show the current session name",
+  "  env                            Show credential environment variables",
+  "  help                           Show supported commands",
+  "  clear                          Clear the screen (or Ctrl+L)",
+];
 
 type Props = {
   credentials: IssueCredentialResponse | null;
@@ -22,6 +38,16 @@ export function Terminal({ credentials }: Props) {
   const termRef = useRef<XTerm | null>(null);
   const credentialRef = useRef<IssueCredentialResponse | null>(null);
   const bufferRef = useRef<string>("");
+  const historyRef = useRef<string[]>([]);
+  const historyIndexRef = useRef<number>(-1);
+
+  function promptString(): string {
+    const cred = credentialRef.current;
+    if (cred && cred.assumed_role_name) {
+      return `${COLORS.prompt}jit${COLORS.reset}${COLORS.dim}:${COLORS.reset}${COLORS.promptRole}${cred.assumed_role_name}${COLORS.reset} ${COLORS.prompt}$${COLORS.reset} `;
+    }
+    return `${COLORS.prompt}$${COLORS.reset} `;
+  }
 
   useEffect(() => {
     if (!containerRef.current) return;
@@ -30,11 +56,13 @@ export function Terminal({ credentials }: Props) {
       cursorBlink: true,
       fontFamily: 'Menlo, Monaco, "Courier New", monospace',
       fontSize: 13,
+      convertEol: true,
       theme: {
         background: "#0b0b0f",
         foreground: "#e6e6e6",
+        cursor: "#e6e6e6",
+        selectionBackground: "#2d3748",
       },
-      convertEol: true,
     });
     const fit = new FitAddon();
     term.loadAddon(fit);
@@ -42,26 +70,25 @@ export function Terminal({ credentials }: Props) {
     fit.fit();
     termRef.current = term;
 
-    term.writeln("JIT IAM Portal sandbox terminal");
-    term.writeln(
-      "Issue a credential from the Requests page, then click 'Use in terminal' on a lease.",
-    );
-    term.writeln("");
-    term.write(PROMPT);
+    const writePrompt = () => term.write(promptString());
+
+    function writeWithCRLF(text: string) {
+      term.write(text.replace(/\n/g, "\r\n"));
+    }
 
     async function execute(command: string) {
       const cred = credentialRef.current;
       if (!cred) {
         term.writeln(
-          "\x1b[31mNo credentials loaded. Issue one from the Requests page first.\x1b[0m",
+          `${COLORS.error}No credentials loaded. Select an active lease and click "Use in terminal".${COLORS.reset}`,
         );
-        term.write(PROMPT);
+        writePrompt();
         return;
       }
 
       if (command === "clear") {
         term.clear();
-        term.write(PROMPT);
+        writePrompt();
         return;
       }
 
@@ -74,38 +101,60 @@ export function Terminal({ credentials }: Props) {
         });
 
         if (response.stdout) {
-          term.writeln(response.stdout.replace(/\n/g, "\r\n"));
+          writeWithCRLF(response.stdout);
+          if (!response.stdout.endsWith("\n")) term.write("\r\n");
         }
         if (response.stderr) {
-          term.writeln(
-            `\x1b[31m${response.stderr.replace(/\n/g, "\r\n")}\x1b[0m`,
-          );
+          writeWithCRLF(`${COLORS.error}${response.stderr}${COLORS.reset}`);
+          if (!response.stderr.endsWith("\n")) term.write("\r\n");
         }
       } catch (err) {
         term.writeln(
-          `\x1b[31mTerminal error: ${err instanceof Error ? err.message : "unknown"
-          }\x1b[0m`,
+          `${COLORS.error}Terminal error: ${
+            err instanceof Error ? err.message : "unknown"
+          }${COLORS.reset}`,
         );
       }
-      term.write(PROMPT);
+      writePrompt();
     }
 
-    const disposable = term.onData((data: string) => {
-      const code = data.charCodeAt(0);
+    function handleData(data: string) {
+      if (data === "\x03") {
+        // Ctrl+C
+        term.write("^C\r\n");
+        bufferRef.current = "";
+        historyIndexRef.current = -1;
+        writePrompt();
+        return;
+      }
 
-      if (code === 13) {
+      if (data === "\x0c") {
+        // Ctrl+L
+        term.clear();
+        term.write(promptString());
+        term.write(bufferRef.current);
+        return;
+      }
+
+      if (data === "\r") {
         term.write("\r\n");
         const command = bufferRef.current.trim();
         bufferRef.current = "";
+        historyIndexRef.current = -1;
         if (command) {
+          historyRef.current.unshift(command);
+          if (historyRef.current.length > 100) {
+            historyRef.current.length = 100;
+          }
           void execute(command);
         } else {
-          term.write(PROMPT);
+          writePrompt();
         }
         return;
       }
 
-      if (code === 127) {
+      if (data === "\x7f") {
+        // Backspace
         if (bufferRef.current.length > 0) {
           bufferRef.current = bufferRef.current.slice(0, -1);
           term.write("\b \b");
@@ -113,27 +162,84 @@ export function Terminal({ credentials }: Props) {
         return;
       }
 
-      if (code === 3) {
-        term.write("^C\r\n");
-        bufferRef.current = "";
-        term.write(PROMPT);
+      if (data === "\t") {
+        // Tab -> four spaces
+        bufferRef.current += "    ";
+        term.write("    ");
         return;
       }
 
-      if (code >= 32 && code < 127) {
+      if (data === "\x1b[A") {
+        // Up arrow
+        const next = historyIndexRef.current + 1;
+        if (next < historyRef.current.length) {
+          const cmd = historyRef.current[next];
+          const eraseCount = bufferRef.current.length;
+          if (eraseCount > 0) term.write("\b \b".repeat(eraseCount));
+          term.write(cmd);
+          bufferRef.current = cmd;
+          historyIndexRef.current = next;
+        }
+        return;
+      }
+
+      if (data === "\x1b[B") {
+        // Down arrow
+        const next = historyIndexRef.current - 1;
+        if (next >= 0) {
+          const cmd = historyRef.current[next];
+          const eraseCount = bufferRef.current.length;
+          if (eraseCount > 0) term.write("\b \b".repeat(eraseCount));
+          term.write(cmd);
+          bufferRef.current = cmd;
+          historyIndexRef.current = next;
+        } else if (historyIndexRef.current !== -1) {
+          const eraseCount = bufferRef.current.length;
+          if (eraseCount > 0) term.write("\b \b".repeat(eraseCount));
+          bufferRef.current = "";
+          historyIndexRef.current = -1;
+        }
+        return;
+      }
+
+      if (data >= " " && data <= "~") {
         bufferRef.current += data;
         term.write(data);
       }
-    });
+    }
+
+    const dataDisposable = term.onData(handleData);
+
+    // Welcome banner
+    term.writeln("");
+    term.writeln(
+      `  ${COLORS.prompt}JIT IAM Portal${COLORS.reset} ${COLORS.dim}sandbox terminal${COLORS.reset}`,
+    );
+    term.writeln("");
+    term.writeln(
+      `  ${COLORS.dim}This terminal simulates AWS CLI commands against the credential you load from the leases list. The backend verifies the presented secret against the stored hash on every command.${COLORS.reset}`,
+    );
+    term.writeln("");
+    term.writeln(`${COLORS.system}Supported commands:${COLORS.reset}`);
+    for (const line of SUPPORTED) {
+      term.writeln(`${COLORS.dim}${line}${COLORS.reset}`);
+    }
+    term.writeln("");
+    term.writeln(
+      `${COLORS.system}No credentials loaded.${COLORS.reset} ${COLORS.dim}Select an active lease and click "Use in terminal".${COLORS.reset}`,
+    );
+    term.writeln("");
+    writePrompt();
 
     const handleResize = () => fit.fit();
     window.addEventListener("resize", handleResize);
 
     return () => {
       window.removeEventListener("resize", handleResize);
-      disposable.dispose();
+      dataDisposable.dispose();
       term.dispose();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -143,22 +249,20 @@ export function Terminal({ credentials }: Props) {
 
     term.writeln("");
     term.writeln(
-      `\x1b[36mCredentials loaded for ${credentials.assumed_role_name}.\x1b[0m`,
+      `${COLORS.system}Credentials loaded.${COLORS.reset} ${COLORS.dim}Assuming${COLORS.reset} ${COLORS.promptRole}${credentials.assumed_role_name ?? "unknown"}${COLORS.reset}${COLORS.dim}.${COLORS.reset}`,
     );
     term.writeln(
-      `\x1b[90mAccess Key ID: ${credentials.access_key_id}\x1b[0m`,
+      `${COLORS.dim}Access Key ID: ${credentials.access_key_id}${COLORS.reset}`,
     );
-    term.writeln(
-      `\x1b[90mTry: aws sts get-caller-identity\x1b[0m`,
-    );
+    term.writeln(`${COLORS.dim}Try: aws sts get-caller-identity${COLORS.reset}`);
     term.writeln("");
-    term.write(PROMPT);
+    term.write(promptString());
   }, [credentials]);
 
   return (
     <div
       ref={containerRef}
-      className="h-80 w-full rounded-md border border-border bg-black p-2"
+      className="h-96 w-full rounded-md border border-border bg-black p-2"
     />
   );
 }
