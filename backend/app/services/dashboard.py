@@ -80,8 +80,10 @@ async def build_summary(
         ).where(
             AccessRequest.requester_id == user_id,
             AccessRequest.decided_at.is_not(None),
+            AccessRequest.decided_at > AccessRequest.created_at,
         )
     )
+    
     avg_value = avg_row.scalar()
     average_decision_seconds = (
         float(avg_value) if avg_value is not None else None
