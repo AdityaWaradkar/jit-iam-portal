@@ -13,6 +13,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   createAccessRequest,
   type AccessRequest,
   type Environment,
@@ -82,54 +89,70 @@ export function RequestForm({
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="environment">Environment</Label>
-              <select
-                id="environment"
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+              <Label>Environment</Label>
+              <Select
                 value={environment}
-                onChange={(e) =>
-                  handleEnvironmentChange(e.target.value as Environment)
-                }
+                onValueChange={(value) => {
+                  if (!value) return;
+                  handleEnvironmentChange(value as Environment);
+                }}
               >
-                {ENVIRONMENTS.map((env) => (
-                  <option key={env.value} value={env.value}>
-                    {env.label}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select an environment" />
+                </SelectTrigger>
+                <SelectContent>
+                  {ENVIRONMENTS.map((env) => (
+                    <SelectItem key={env.value} value={env.value}>
+                      {env.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="role">Role</Label>
-              <select
-                id="role"
-                className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+              <Label>Role</Label>
+              <Select
                 value={role}
-                onChange={(e) => setRole(e.target.value)}
+                onValueChange={(value) => {
+                  if (value === null) return;
+                  setRole(value);
+                }}
               >
-                {availableRoles.map((r) => (
-                  <option key={r} value={r}>
-                    {r}
-                  </option>
-                ))}
-              </select>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder="Select a role" />
+                </SelectTrigger>
+                <SelectContent>
+                  {availableRoles.map((r) => (
+                    <SelectItem key={r} value={r}>
+                      {r}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="duration">Duration</Label>
-            <select
-              id="duration"
-              className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
-              value={duration}
-              onChange={(e) => setDuration(Number(e.target.value))}
+            <Label>Duration</Label>
+            <Select
+              value={String(duration)}
+              onValueChange={(value) => {
+                if (value === null) return;
+                setDuration(Number(value));
+              }}
             >
-              {DURATION_OPTIONS.map((opt) => (
-                <option key={opt.value} value={opt.value}>
-                  {opt.label}
-                </option>
-              ))}
-            </select>
+              <SelectTrigger className="w-full">
+                <SelectValue placeholder="Select a duration" />
+              </SelectTrigger>
+              <SelectContent>
+                {DURATION_OPTIONS.map((opt) => (
+                  <SelectItem key={opt.value} value={String(opt.value)}>
+                    {opt.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
