@@ -1,0 +1,23 @@
+name: Keep Alive
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"
+  workflow_dispatch:
+
+jobs:
+  ping:
+    name: Ping backend
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping health endpoint
+        run: |
+          set -e
+          status=$(curl -s -o /dev/null -w "%{http_code}" \
+            --max-time 60 \
+            https://jit-iam-portal.onrender.com/api/v1/health)
+          echo "HTTP status: $status"
+          if [ "$status" != "200" ]; then
+            echo "Health check failed"
+            exit 1
+          fi
