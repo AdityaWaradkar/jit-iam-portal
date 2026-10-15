@@ -55,11 +55,11 @@ module "logs" {
 }
 
 module "s3_audit" {
-  source                       = "../../modules/s3_audit"
-  name_prefix                  = local.name_prefix
-  environment                  = "prod"
-  account_id                   = data.aws_caller_identity.current.account_id
-  object_lock_retention_days   = 3650
+  source                     = "../../modules/s3_audit"
+  name_prefix                = local.name_prefix
+  environment                = "prod"
+  account_id                 = data.aws_caller_identity.current.account_id
+  object_lock_retention_days = 3650
 }
 
 module "rds" {
@@ -92,14 +92,14 @@ module "rds" {
 }
 
 module "iam" {
-  source            = "../../modules/iam"
-  name_prefix       = "jit-iam-portal-prod"
-  environment       = "prod"
-  vpc_id            = module.vpc.vpc_id
-  audit_bucket_arn  = module.s3_audit.bucket_arn
+  source              = "../../modules/iam"
+  name_prefix         = "jit-iam-portal-prod"
+  environment         = "prod"
+  vpc_id              = module.vpc.vpc_id
+  audit_bucket_arn    = module.s3_audit.bucket_arn
   database_secret_arn = module.secrets.database_secret_arn
-  jwt_secret_arn    = module.secrets.jwt_secret_arn
-  vault_secret_arn  = module.secrets.vault_secret_arn
+  jwt_secret_arn      = module.secrets.jwt_secret_arn
+  vault_secret_arn    = module.secrets.vault_secret_arn
 }
 
 module "elasticache" {
@@ -123,22 +123,22 @@ module "alb" {
 }
 
 module "ecs" {
-  source                  = "../../modules/ecs"
-  name_prefix             = "jit-iam-portal-prod"
-  environment             = "prod"
-  private_subnet_ids      = module.vpc.private_subnet_ids
-  ecs_security_group_id   = module.iam.ecs_security_group_id
-  backend_image           = "${module.ecr.backend_repository_url}:latest"
-  frontend_image          = "${module.ecr.frontend_repository_url}:latest"
-  backend_task_role_arn   = module.iam.backend_task_role_arn
-  frontend_task_role_arn  = module.iam.frontend_task_role_arn
-  execution_role_arn      = module.iam.execution_role_arn
+  source                    = "../../modules/ecs"
+  name_prefix               = "jit-iam-portal-prod"
+  environment               = "prod"
+  private_subnet_ids        = module.vpc.private_subnet_ids
+  ecs_security_group_id     = module.iam.ecs_security_group_id
+  backend_image             = "${module.ecr.backend_repository_url}:latest"
+  frontend_image            = "${module.ecr.frontend_repository_url}:latest"
+  backend_task_role_arn     = module.iam.backend_task_role_arn
+  frontend_task_role_arn    = module.iam.frontend_task_role_arn
+  execution_role_arn        = module.iam.execution_role_arn
   backend_target_group_arn  = module.alb.backend_target_group_arn
   frontend_target_group_arn = module.alb.frontend_target_group_arn
-  database_secret_arn     = module.secrets.database_secret_arn
-  jwt_secret_arn          = module.secrets.jwt_secret_arn
-  vault_secret_arn        = module.secrets.vault_secret_arn
-  backend_log_group_name  = module.logs.backend_log_group_name
-  frontend_log_group_name = module.logs.frontend_log_group_name
-  desired_count           = 2
+  database_secret_arn       = module.secrets.database_secret_arn
+  jwt_secret_arn            = module.secrets.jwt_secret_arn
+  vault_secret_arn          = module.secrets.vault_secret_arn
+  backend_log_group_name    = module.logs.backend_log_group_name
+  frontend_log_group_name   = module.logs.frontend_log_group_name
+  desired_count             = 2
 }

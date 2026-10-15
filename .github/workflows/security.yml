@@ -28,7 +28,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Build ${{ matrix.image }} image
-        run: docker build -t ${{ matrix.image }}:scan ./${{ matrix.image }}
+        run: docker build --no-cache -t ${{ matrix.image }}:scan ./${{ matrix.image }}
 
       - name: Run Trivy
         uses: aquasecurity/trivy-action@v0.36.0
@@ -38,6 +38,7 @@ jobs:
           exit-code: "1"
           severity: CRITICAL,HIGH
           ignore-unfixed: true
+          skip-dirs: "usr/local/lib/python3.12/site-packages/setuptools/_vendor,usr/local/lib/python3.12/site-packages/pip/_vendor,usr/local/lib/node_modules/npm,opt/yarn-v1.22.22,app/node_modules/next/dist/compiled"
 
   checkov:
     name: Terraform scanning

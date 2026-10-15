@@ -59,7 +59,8 @@ override.tf.json
 terraform.rc
 
 # ---------- Logs / Runtime ----------
-logs/
+/secrets/
+/logs/
 *.log
 audit-logs/
 tmp/
