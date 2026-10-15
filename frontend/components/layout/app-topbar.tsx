@@ -1,6 +1,7 @@
 "use client";
 
 import { PersonaSwitcher } from "@/components/auth/persona-switcher";
+import { ResetButton } from "@/components/demo/reset-button";
 import { Badge } from "@/components/ui/badge";
 
 export function AppTopbar() {
@@ -12,7 +13,10 @@ export function AppTopbar() {
         </Badge>
       </div>
 
-      <PersonaSwitcher />
+      <div className="flex items-center gap-3">
+        <ResetButton />
+        <PersonaSwitcher />
+      </div>
     </header>
   );
 }

@@ -31,7 +31,12 @@ const navItems: NavItem[] = [
     personas: ["approver"],
   },
   { href: "/leases", label: "Leases", icon: ShieldCheck },
-  { href: "/audit", label: "Audit", icon: ScrollText },
+  {
+    href: "/audit",
+    label: "Audit",
+    icon: ScrollText,
+    personas: ["auditor"],
+  },
   { href: "/demo", label: "Demo", icon: FlaskConical },
 ];
 

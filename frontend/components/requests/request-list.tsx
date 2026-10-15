@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/card";
 import type { AccessRequest, RequestStatus } from "@/lib/api";
 import { REQUEST_STATUS_LABEL } from "@/lib/constants";
+import { KeyRound } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 
 const STATUS_VARIANT: Record<
   RequestStatus,
@@ -40,9 +42,11 @@ export function RequestList({
           <CardTitle className="text-base">Your requests</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-sm text-muted-foreground">
-            No requests yet. Submit one above to get started.
-          </p>
+          <EmptyState
+            icon={KeyRound}
+            title="No requests yet"
+            description="Submit a request above to see it appear here with a policy decision and status."
+          />
         </CardContent>
       </Card>
     );

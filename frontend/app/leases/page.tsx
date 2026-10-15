@@ -6,6 +6,8 @@ import { Countdown } from "@/components/leases/countdown";
 import { Terminal } from "@/components/leases/terminal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { ShieldCheck } from "lucide-react";
+import { EmptyState } from "@/components/ui/empty-state";
 import {
   Card,
   CardContent,
@@ -17,6 +19,7 @@ import {
   getLatestCredential,
   subscribeLatestCredential,
 } from "@/lib/credentials-store";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString();
@@ -86,17 +89,15 @@ export default function LeasesPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading leases...</p>
+        <LoadingSkeleton rows={4} />
       ) : items.length === 0 ? (
         <Card>
-          <CardHeader>
-            <CardTitle className="text-base">No leases yet</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">
-              Once you issue credentials for an approved request, they will
-              appear here.
-            </p>
+          <CardContent className="pt-6">
+            <EmptyState
+              icon={ShieldCheck}
+              title="No leases yet"
+              description="Once you issue credentials for an approved request, they will appear here with a live countdown."
+            />
           </CardContent>
         </Card>
       ) : (
