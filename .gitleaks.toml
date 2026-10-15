@@ -1,0 +1,18 @@
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Paths and patterns that are not real secrets"
+
+paths = [
+  '''^frontend/\.next/''',
+  '''^frontend/node_modules/''',
+  '''^backend/audit-logs/''',
+  '''^backend/\.venv/''',
+  '''^\.terraform/''',
+  '''^infra/terraform/.*/\.terraform/''',
+]
+
+regexes = [
+  '''ASIA[A-Z0-9]{16}''',
+]

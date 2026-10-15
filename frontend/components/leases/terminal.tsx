@@ -239,7 +239,6 @@ export function Terminal({ credentials }: Props) {
       dataDisposable.dispose();
       term.dispose();
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

@@ -67,6 +67,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 async def _backfill_audit_writer() -> None:
     from sqlalchemy import select
+
     from app.db.models import AuditEvent
 
     try:

@@ -9,6 +9,7 @@ WORKDIR /app
 
 RUN apt-get update \
     && apt-get install -y --no-install-recommends build-essential curl \
+    && apt-get upgrade -y \
     && rm -rf /var/lib/apt/lists/*
 
 COPY pyproject.toml ./

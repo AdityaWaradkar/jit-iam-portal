@@ -62,6 +62,20 @@ module "s3_audit" {
   object_lock_retention_days = 3650
 }
 
+module "secrets" {
+  source            = "../../modules/secrets"
+  name_prefix       = local.name_prefix
+  environment       = "prod"
+  database_username = var.database_username
+  database_password = var.database_password
+  database_host     = module.rds.address
+  database_port     = module.rds.port
+  database_name     = module.rds.database_name
+  jwt_secret        = var.jwt_secret
+  vault_token       = var.vault_token
+  vault_addr        = var.vault_addr
+}
+
 module "rds" {
   source                = "../../modules/rds"
   name_prefix           = local.name_prefix
@@ -75,20 +89,6 @@ module "rds" {
   multi_az              = true
   deletion_protection   = true
   backup_retention_days = 30
-}
-
-module "rds" {
-  source                = "../../modules/rds"
-  name_prefix           = "jit-iam-portal-prod"
-  environment           = "prod"
-  vpc_id                = module.vpc.vpc_id
-  private_subnet_ids    = module.vpc.private_subnet_ids
-  ecs_security_group_id = module.iam.ecs_security_group_id
-  database_username     = var.database_username
-  database_password     = var.database_password
-  instance_class        = "db.t4g.micro"
-  multi_az              = false
-  deletion_protection   = false
 }
 
 module "iam" {
