@@ -310,3 +310,70 @@ export function runTerminalCommand(
     body: payload,
   });
 }
+
+// --- Audit ---
+
+export type AuditEvent = {
+  id: string;
+  event_type: string;
+  actor_id: string | null;
+  actor_name: string | null;
+  request_id: string | null;
+  lease_id: string | null;
+  payload: Record<string, unknown>;
+  created_at: string;
+};
+
+export type AuditEventList = {
+  items: AuditEvent[];
+  total: number;
+  limit: number;
+  offset: number;
+};
+
+export type AuditTypeCount = {
+  event_type: string;
+  count: number;
+};
+
+export type AuditStats = {
+  total_events: number;
+  first_event_at: string | null;
+  last_event_at: string | null;
+  by_type: AuditTypeCount[];
+};
+
+export type AuditFilters = {
+  event_type?: string;
+  actor_id?: string;
+  request_id?: string;
+  lease_id?: string;
+  since?: string;
+  until?: string;
+  limit?: number;
+  offset?: number;
+};
+
+function buildQuery(filters: AuditFilters): string {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(filters)) {
+    if (value !== undefined && value !== null && value !== "") {
+      params.set(key, String(value));
+    }
+  }
+  const query = params.toString();
+  return query ? `?${query}` : "";
+}
+
+export function listAuditEvents(filters: AuditFilters = {}): Promise<AuditEventList> {
+  return apiFetch<AuditEventList>(`/api/v1/audit${buildQuery(filters)}`);
+}
+
+export function getAuditStats(): Promise<AuditStats> {
+  return apiFetch<AuditStats>("/api/v1/audit/stats");
+}
+
+export function getAuditExportUrl(): string {
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+  return `${base}/api/v1/audit/export`;
+}
