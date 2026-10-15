@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { Countdown } from "@/components/leases/countdown";
+import { Terminal } from "@/components/leases/terminal";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,7 +12,11 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { listLeases, type Lease } from "@/lib/api";
+import { listLeases, type IssueCredentialResponse, type Lease } from "@/lib/api";
+import {
+  getLatestCredential,
+  subscribeLatestCredential,
+} from "@/lib/credentials-store";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString();
@@ -22,6 +27,10 @@ export default function LeasesPage() {
   const [selected, setSelected] = useState<Lease | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [storedCredential, setStoredCredential] =
+    useState<IssueCredentialResponse | null>(() => getLatestCredential());
+  const [terminalCredential, setTerminalCredential] =
+    useState<IssueCredentialResponse | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,6 +56,19 @@ export default function LeasesPage() {
       cancelled = true;
     };
   }, []);
+
+  useEffect(() => {
+    const unsubscribe = subscribeLatestCredential(() => {
+      setStoredCredential(getLatestCredential());
+    });
+    return unsubscribe;
+  }, []);
+
+  function handleUseInTerminal(lease: Lease) {
+    if (!storedCredential) return;
+    if (storedCredential.lease_id !== lease.id) return;
+    setTerminalCredential(storedCredential);
+  }
 
   return (
     <div className="space-y-6">
@@ -80,32 +102,53 @@ export default function LeasesPage() {
       ) : (
         <div className="grid gap-6 lg:grid-cols-2">
           <div className="space-y-3">
-            {items.map((lease) => (
-              <button
-                key={lease.id}
-                type="button"
-                onClick={() => setSelected(lease)}
-                className="w-full rounded-md border border-border p-3 text-left transition-colors hover:bg-secondary/50"
-              >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">
-                      {lease.assumed_role_name ?? "Unknown role"}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Key: {lease.access_key_id}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      Issued: {formatDate(lease.issued_at)}
-                    </p>
-                  </div>
-                  <Countdown
-                    expiresAt={lease.expires_at}
-                    status={lease.status}
-                  />
+            {items.map((lease) => {
+              const canTest =
+                lease.status === "active" &&
+                storedCredential !== null &&
+                storedCredential.lease_id === lease.id;
+              return (
+                <div
+                  key={lease.id}
+                  className="rounded-md border border-border p-3"
+                >
+                  <button
+                    type="button"
+                    onClick={() => setSelected(lease)}
+                    className="w-full text-left"
+                  >
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="space-y-1">
+                        <p className="text-sm font-medium">
+                          {lease.assumed_role_name ?? "Unknown role"}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Key: {lease.access_key_id}
+                        </p>
+                        <p className="text-xs text-muted-foreground">
+                          Issued: {formatDate(lease.issued_at)}
+                        </p>
+                      </div>
+                      <Countdown
+                        expiresAt={lease.expires_at}
+                        status={lease.status}
+                      />
+                    </div>
+                  </button>
+                  {canTest && (
+                    <div className="mt-3 border-t border-border pt-3">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        onClick={() => handleUseInTerminal(lease)}
+                      >
+                        Use in terminal
+                      </Button>
+                    </div>
+                  )}
                 </div>
-              </button>
-            ))}
+              );
+            })}
           </div>
 
           {selected && (
@@ -118,11 +161,6 @@ export default function LeasesPage() {
                   <span className="text-muted-foreground">Lease ID</span>
                   <span className="break-all font-mono text-xs">
                     {selected.id}
-                  </span>
-
-                  <span className="text-muted-foreground">Request ID</span>
-                  <span className="break-all font-mono text-xs">
-                    {selected.request_id}
                   </span>
 
                   <span className="text-muted-foreground">Access Key ID</span>
@@ -143,34 +181,27 @@ export default function LeasesPage() {
 
                   <span className="text-muted-foreground">Expires at</span>
                   <span>{formatDate(selected.expires_at)}</span>
-
-                  {selected.revoked_at && (
-                    <>
-                      <span className="text-muted-foreground">Revoked at</span>
-                      <span>{formatDate(selected.revoked_at)}</span>
-                    </>
-                  )}
                 </div>
-
-                <div className="border-t border-border pt-4">
-                  <Countdown
-                    expiresAt={selected.expires_at}
-                    status={selected.status}
-                  />
-                </div>
-
-                <Button
-                  size="sm"
-                  variant="secondary"
-                  onClick={() => setSelected(null)}
-                >
-                  Close
-                </Button>
               </CardContent>
             </Card>
           )}
         </div>
       )}
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Terminal</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <Terminal credentials={terminalCredential} />
+          {!terminalCredential && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              Issue a credential from the Requests page, then click
+              &quot;Use in terminal&quot; on a matching lease.
+            </p>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }
