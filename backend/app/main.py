@@ -6,6 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
+from app.core.audit_writer import audit_writer
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.db.session import AsyncSessionLocal
@@ -20,11 +21,6 @@ LEASE_SWEEP_INTERVAL_SECONDS = 15
 
 
 async def _lease_sweep_loop() -> None:
-    """Periodically scan for expired leases and expire them.
-
-    Runs for the lifetime of the application. Catches and logs all
-    exceptions so the loop is never cancelled by an unhandled error.
-    """
     logger.info(
         "lease_sweep_started",
         interval_seconds=LEASE_SWEEP_INTERVAL_SECONDS,
@@ -52,6 +48,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         environment=settings.app_env,
     )
 
+    audit_writer.start()
+    await _backfill_audit_writer()
     sweep_task = asyncio.create_task(_lease_sweep_loop())
 
     try:
@@ -62,9 +60,34 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             await sweep_task
         except asyncio.CancelledError:
             pass
+        await audit_writer.stop()
 
     logger.info("application_stopping", app_name=settings.app_name)
 
+
+async def _backfill_audit_writer() -> None:
+    from sqlalchemy import select
+
+    from app.db.models import AuditEvent
+
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            select(AuditEvent).order_by(AuditEvent.created_at.asc())
+        )
+        events = list(result.scalars().all())
+        for event in events:
+            audit_writer.enqueue(
+                {
+                    "id": str(event.id),
+                    "event_type": event.event_type,
+                    "actor_id": str(event.actor_id) if event.actor_id else None,
+                    "request_id": str(event.request_id) if event.request_id else None,
+                    "lease_id": str(event.lease_id) if event.lease_id else None,
+                    "payload": event.payload,
+                    "created_at": event.created_at.isoformat(),
+                }
+            )
+        logger.info("audit_writer_backfilled", count=len(events))
 
 app = FastAPI(
     title=settings.app_name,

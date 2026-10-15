@@ -5,6 +5,7 @@ from app.api.v1 import (
     access_issue,
     admin,
     approver,
+    audit,
     auth,
     dashboard,
     demo,
@@ -23,4 +24,5 @@ api_router.include_router(dashboard.router)
 api_router.include_router(leases.router)
 api_router.include_router(admin.router)
 api_router.include_router(terminal.router)
+api_router.include_router(audit.router)
 api_router.include_router(demo.router)
