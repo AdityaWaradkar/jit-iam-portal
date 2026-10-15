@@ -1,5 +1,13 @@
 "use client";
 
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { AUDIT_EVENT_TYPES } from "@/lib/audit-types";
@@ -31,18 +39,25 @@ export function FilterBar({ filters, onChange }: Props) {
     <div className="grid gap-3 rounded-md border border-border bg-card p-4 md:grid-cols-3 lg:grid-cols-6">
       <div className="space-y-1">
         <label className="text-xs text-muted-foreground">Event type</label>
-        <select
-          value={filters.event_type ?? ""}
-          onChange={(e) => set("event_type", e.target.value || undefined)}
-          className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm"
+        <Select
+          value={filters.event_type ?? "__all__"}
+          onValueChange={(value) => {
+            if (value === null) return;
+            set("event_type", value === "__all__" ? undefined : value);
+          }}
         >
-          <option value="">All types</option>
-          {AUDIT_EVENT_TYPES.map((entry) => (
-            <option key={entry.value} value={entry.value}>
-              {entry.label}
-            </option>
-          ))}
-        </select>
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="All types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="__all__">All types</SelectItem>
+            {AUDIT_EVENT_TYPES.map((entry) => (
+              <SelectItem key={entry.value} value={entry.value}>
+                {entry.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       <div className="space-y-1">
