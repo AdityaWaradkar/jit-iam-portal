@@ -4,6 +4,7 @@ services:
       - ./backend/app:/app/app:ro
       - ./backend/alembic:/app/alembic
       - ./backend/alembic.ini:/app/alembic.ini:ro
+      - ./backend/audit-logs:/app/audit-logs
     environment:
       DEBUG: "true"
     command:
