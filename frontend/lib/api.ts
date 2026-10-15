@@ -377,3 +377,52 @@ export function getAuditExportUrl(): string {
   const base = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
   return `${base}/api/v1/audit/export`;
 }
+
+// --- Security Overview ---
+
+export type ZeroStandingPrivilegesStatus = {
+  active_leases: number;
+  zero_standing: boolean;
+  message: string;
+};
+
+export type ElevationDay = {
+  day: string;
+  count: number;
+  by_environment: Record<string, number>;
+};
+
+export type TopRequester = {
+  actor_id: string;
+  actor_name: string;
+  request_count: number;
+};
+
+export type RecentCredential = {
+  lease_id: string;
+  access_key_id: string;
+  assumed_role_name: string | null;
+  issued_at: string;
+  expires_at: string;
+  user_name: string;
+};
+
+export type DecisionLatency = {
+  sample_size: number;
+  average_seconds: number | null;
+  p50_seconds: number | null;
+  p95_seconds: number | null;
+};
+
+export type SecurityOverview = {
+  zsp: ZeroStandingPrivilegesStatus;
+  elevations_last_seven_days: ElevationDay[];
+  top_requesters: TopRequester[];
+  recent_credentials: RecentCredential[];
+  decision_latency: DecisionLatency;
+  generated_at: string;
+};
+
+export function getSecurityOverview(): Promise<SecurityOverview> {
+  return apiFetch<SecurityOverview>("/api/v1/security/overview");
+}
