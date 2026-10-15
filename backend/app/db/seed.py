@@ -47,7 +47,7 @@ async def reset_demo_data(session: AsyncSession) -> None:
     alex = User(
         id=ALEX_ID,
         email="alex@example.com",
-        full_name="Alex Rivera",
+        full_name="Aditya Waradkar",
         persona=PersonaRole.ENGINEER,
         is_active=True,
     )
@@ -61,7 +61,7 @@ async def reset_demo_data(session: AsyncSession) -> None:
     marcus = User(
         id=MARCUS_ID,
         email="marcus@example.com",
-        full_name="Marcus Patel",
+        full_name="Marcus Hale",
         persona=PersonaRole.AUDITOR,
         is_active=True,
     )

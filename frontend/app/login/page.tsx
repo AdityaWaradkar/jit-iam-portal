@@ -17,7 +17,7 @@ import {
 const personas = [
   {
     email: "alex@example.com",
-    name: "Alex Rivera",
+    name: "Aditya Waradkar",
     role: "Senior Backend Engineer",
     description: "Request temporary access to cloud resources.",
     persona: "engineer" as const,
@@ -31,7 +31,7 @@ const personas = [
   },
   {
     email: "marcus@example.com",
-    name: "Marcus Patel",
+    name: "Marcus Hale",
     role: "Compliance Auditor",
     description: "Review the immutable audit trail.",
     persona: "auditor" as const,
