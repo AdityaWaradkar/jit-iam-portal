@@ -173,7 +173,10 @@ async def _build_latency(db: AsyncSession) -> DecisionLatency:
                 "epoch",
                 AccessRequest.decided_at - AccessRequest.created_at,
             )
-        ).where(AccessRequest.decided_at.is_not(None))
+        ).where(
+            AccessRequest.decided_at.is_not(None),
+            AccessRequest.decided_at > AccessRequest.created_at,
+        )
     )
     values = [float(v) for (v,) in result.all() if v is not None]
     if not values:
