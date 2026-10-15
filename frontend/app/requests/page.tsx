@@ -5,8 +5,8 @@ import { useEffect, useState } from "react";
 import { RequestDetail } from "@/components/requests/request-detail";
 import { RequestForm } from "@/components/requests/request-form";
 import { RequestList } from "@/components/requests/request-list";
-import { listAccessRequests, type AccessRequest } from "@/lib/api";
 import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
+import { listAccessRequests, type AccessRequest } from "@/lib/api";
 
 export default function RequestsPage() {
   const [items, setItems] = useState<AccessRequest[]>([]);
@@ -66,8 +66,16 @@ export default function RequestsPage() {
       {loading ? (
         <LoadingSkeleton rows={4} />
       ) : (
-        <div className="grid gap-6 lg:grid-cols-2">
-          <RequestList items={items} onSelect={setSelected} />
+        <div
+          className={
+            selected ? "grid gap-6 lg:grid-cols-2" : "grid gap-6"
+          }
+        >
+          <RequestList
+            items={items}
+            onSelect={setSelected}
+            layout={selected ? "stack" : "grid"}
+          />
           {selected && <RequestDetail request={selected} />}
         </div>
       )}

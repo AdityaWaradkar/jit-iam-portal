@@ -1,5 +1,7 @@
 "use client";
 
+import { KeyRound } from "lucide-react";
+
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
@@ -7,10 +9,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import { EmptyState } from "@/components/ui/empty-state";
 import type { AccessRequest, RequestStatus } from "@/lib/api";
 import { REQUEST_STATUS_LABEL } from "@/lib/constants";
-import { KeyRound } from "lucide-react";
-import { EmptyState } from "@/components/ui/empty-state";
 
 const STATUS_VARIANT: Record<
   RequestStatus,
@@ -28,13 +29,17 @@ function formatDate(iso: string): string {
   return new Date(iso).toLocaleString();
 }
 
+type RequestListProps = {
+  items: AccessRequest[];
+  onSelect?: (request: AccessRequest) => void;
+  layout?: "grid" | "stack";
+};
+
 export function RequestList({
   items,
   onSelect,
-}: {
-  items: AccessRequest[];
-  onSelect?: (request: AccessRequest) => void;
-}) {
+  layout = "grid",
+}: RequestListProps) {
   if (items.length === 0) {
     return (
       <Card data-tour="request-list">
@@ -52,51 +57,61 @@ export function RequestList({
     );
   }
 
+  const listClasses =
+    layout === "grid"
+      ? "grid gap-3 md:grid-cols-2 xl:grid-cols-3"
+      : "space-y-3";
+
   return (
     <Card data-tour="request-list">
       <CardHeader>
         <CardTitle className="text-base">Your requests</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-3">
-        {items.map((request) => (
-          <button
-            key={request.id}
-            type="button"
-            onClick={() => onSelect?.(request)}
-            className="w-full rounded-md border border-border p-3 text-left transition-colors hover:bg-secondary/50"
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <span className="text-sm font-medium">
-                    {request.requested_role}
-                  </span>
-                  <Badge variant="outline" className="text-xs">
-                    {request.environment}
-                  </Badge>
-                </div>
-                <p className="text-xs text-muted-foreground">
-                  Duration: {request.duration_minutes} minutes
-                </p>
-                <p className="text-xs text-muted-foreground">
-                  Submitted: {formatDate(request.created_at)}
-                </p>
-                <p className="line-clamp-2 text-xs text-muted-foreground">
-                  {request.justification}
-                </p>
-                {request.policy_reason && (
-                  <p className="mt-2 rounded border border-border bg-secondary/50 p-2 text-xs text-muted-foreground">
-                    <span className="font-medium">Policy:</span>{" "}
-                    {request.policy_reason}
+      <CardContent>
+        <div className={listClasses}>
+          {items.map((request) => (
+            <button
+              key={request.id}
+              type="button"
+              onClick={() => onSelect?.(request)}
+              className="flex h-full w-full flex-col rounded-md border border-border p-3 text-left transition-colors hover:bg-secondary/50"
+            >
+              <div className="flex flex-1 items-start justify-between gap-4">
+                <div className="space-y-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="text-sm font-medium">
+                      {request.requested_role}
+                    </span>
+                    <Badge variant="outline" className="text-xs">
+                      {request.environment}
+                    </Badge>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Duration: {request.duration_minutes} minutes
                   </p>
-                )}
+                  <p className="text-xs text-muted-foreground">
+                    Submitted: {formatDate(request.created_at)}
+                  </p>
+                  <p className="line-clamp-2 text-xs text-muted-foreground">
+                    {request.justification}
+                  </p>
+                  {request.policy_reason && (
+                    <p className="mt-2 rounded border border-border bg-secondary/50 p-2 text-xs text-muted-foreground">
+                      <span className="font-medium">Policy:</span>{" "}
+                      {request.policy_reason}
+                    </p>
+                  )}
+                </div>
+                <Badge
+                  variant={STATUS_VARIANT[request.status]}
+                  className="shrink-0"
+                >
+                  {REQUEST_STATUS_LABEL[request.status] ?? request.status}
+                </Badge>
               </div>
-              <Badge variant={STATUS_VARIANT[request.status]}>
-                {REQUEST_STATUS_LABEL[request.status] ?? request.status}
-              </Badge>
-            </div>
-          </button>
-        ))}
+            </button>
+          ))}
+        </div>
       </CardContent>
     </Card>
   );
