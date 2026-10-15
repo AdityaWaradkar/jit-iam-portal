@@ -328,3 +328,8 @@ The deployment guide covers the full lifecycle of an AWS deployment: prerequisit
 The configuration validates locally without an AWS account. Applying it is optional and requires a clear plan to tear down afterward.
 
 End of deployment guide.
+
+
+## Verification
+
+The CI and Security workflows run on every pull request. This section exists to confirm the pipelines are healthy.
