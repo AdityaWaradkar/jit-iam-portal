@@ -70,7 +70,7 @@ export function RequestForm({
   const availableRoles = ALLOWED_ROLES[environment];
 
   return (
-    <Card>
+    <Card data-tour="request-form">
       <CardHeader>
         <CardTitle>New access request</CardTitle>
         <CardDescription>

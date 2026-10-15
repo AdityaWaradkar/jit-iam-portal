@@ -35,7 +35,7 @@ export function RequestList({
 }) {
   if (items.length === 0) {
     return (
-      <Card>
+      <Card data-tour="request-list">
         <CardHeader>
           <CardTitle className="text-base">Your requests</CardTitle>
         </CardHeader>
@@ -49,7 +49,7 @@ export function RequestList({
   }
 
   return (
-    <Card>
+    <Card data-tour="request-list">
       <CardHeader>
         <CardTitle className="text-base">Your requests</CardTitle>
       </CardHeader>

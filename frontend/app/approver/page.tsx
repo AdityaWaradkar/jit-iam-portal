@@ -60,7 +60,9 @@ export default function ApproverPage() {
             Review pending access requests and approve or deny them.
           </p>
         </div>
-        <ViewToggle view={view} onChange={setView} />
+        <div data-tour="approver-view-toggle">
+          <ViewToggle view={view} onChange={setView} />
+        </div>
       </div>
 
       {error && (
