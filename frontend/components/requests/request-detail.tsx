@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { useState } from "react";
-import { setLatestCredential } from "@/lib/credentials-store";
 
 import { CredentialModal } from "@/components/credentials/credential-modal";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +18,7 @@ import {
   type IssueCredentialResponse,
 } from "@/lib/api";
 import { REQUEST_STATUS_LABEL } from "@/lib/constants";
+import { setLatestCredential } from "@/lib/credentials-store";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleString();
@@ -93,24 +93,18 @@ export function RequestDetail({ request }: { request: AccessRequest }) {
           )}
 
           {canIssue && (
-            <div className="space-y-2 border-t border-border pt-4">
-              <Button
-                size="sm"
-                disabled={busy}
-                onClick={handleIssue}
-              >
+            <div
+              data-tour="issue-credentials"
+              className="space-y-2 border-t border-border pt-4"
+            >
+              <Button size="sm" disabled={busy} onClick={handleIssue}>
                 {busy ? "Issuing..." : "Issue credentials"}
               </Button>
-              {error && (
-                <p className="text-xs text-destructive">{error}</p>
-              )}
+              {error && <p className="text-xs text-destructive">{error}</p>}
               {leaseId && (
                 <p className="text-xs text-muted-foreground">
                   Lease issued.{" "}
-                  <Link
-                    href="/leases"
-                    className="text-foreground underline"
-                  >
+                  <Link href="/leases" className="text-foreground underline">
                     View leases
                   </Link>
                 </p>

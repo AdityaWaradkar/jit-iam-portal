@@ -129,16 +129,18 @@ export default function AuditPage() {
       {loading ? (
         <p className="text-sm text-muted-foreground">Loading events...</p>
       ) : (
-        <EventTable
-          items={items}
-          total={total}
-          limit={filters.limit ?? DEFAULT_LIMIT}
-          offset={filters.offset ?? 0}
-          onSelect={setSelected}
-          onPage={(nextOffset) =>
-            setFilters((prev) => ({ ...prev, offset: nextOffset }))
-          }
-        />
+        <div data-tour="audit-table">
+          <EventTable
+            items={items}
+            total={total}
+            limit={filters.limit ?? DEFAULT_LIMIT}
+            offset={filters.offset ?? 0}
+            onSelect={setSelected}
+            onPage={(nextOffset) =>
+              setFilters((prev) => ({ ...prev, offset: nextOffset }))
+            }
+          />
+        </div>
       )}
 
       <EventDrawer event={selected} onClose={() => setSelected(null)} />

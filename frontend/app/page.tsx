@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Compass } from "lucide-react";
 
 import { useAuth } from "@/components/auth/auth-provider";
 import { ActivityFeed } from "@/components/dashboard/activity-feed";
@@ -11,6 +12,7 @@ import { ElevationHeatmap } from "@/components/security/elevation-heatmap";
 import { RecentCredentials } from "@/components/security/recent-credentials";
 import { TopRequesters } from "@/components/security/top-requesters";
 import { ZspCard } from "@/components/security/zsp-card";
+import { useTour } from "@/components/tour/tour-provider";
 import { Button } from "@/components/ui/button";
 import {
   getDashboardSummary,
@@ -20,21 +22,34 @@ import {
 } from "@/lib/api";
 
 export default function DashboardPage() {
-  const { user } = useAuth();
+  const { user, ready } = useAuth();
+  const { startTour } = useTour();
   const isAuditor = user?.persona === "auditor";
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          {isAuditor
-            ? "Security posture overview of the platform."
-            : "Overview of your access requests, active leases, and recent activity."}
-        </p>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-semibold tracking-tight">Dashboard</h1>
+          <p className="text-sm text-muted-foreground">
+            {isAuditor
+              ? "Security posture overview of the platform."
+              : "Overview of your access requests, active leases, and recent activity."}
+          </p>
+        </div>
+        <Button variant="secondary" size="sm" onClick={startTour}>
+          <Compass className="mr-2 h-4 w-4" />
+          Take the tour
+        </Button>
       </div>
 
-      {isAuditor ? <SecurityOverviewView /> : <PersonalDashboardView />}
+      {!ready ? (
+        <p className="text-sm text-muted-foreground">Loading dashboard...</p>
+      ) : isAuditor ? (
+        <SecurityOverviewView />
+      ) : (
+        <PersonalDashboardView />
+      )}
     </div>
   );
 }

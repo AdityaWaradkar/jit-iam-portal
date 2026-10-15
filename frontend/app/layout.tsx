@@ -4,6 +4,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/auth-provider";
 import { AppShell } from "@/components/layout/app-shell";
+import { TourProvider } from "@/components/tour/tour-provider";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -21,7 +22,9 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className={inter.className}>
         <AuthProvider>
-          <AppShell>{children}</AppShell>
+          <TourProvider>
+            <AppShell>{children}</AppShell>
+          </TourProvider>
         </AuthProvider>
       </body>
     </html>

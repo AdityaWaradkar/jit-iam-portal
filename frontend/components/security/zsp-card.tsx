@@ -12,7 +12,7 @@ import type { ZeroStandingPrivilegesStatus } from "@/lib/api";
 export function ZspCard({ zsp }: { zsp: ZeroStandingPrivilegesStatus }) {
   const green = zsp.zero_standing;
   return (
-    <Card>
+    <Card data-tour="zsp-card">
       <CardHeader className="flex flex-row items-center justify-between space-y-0">
         <CardTitle className="text-base">
           Zero Standing Privileges
