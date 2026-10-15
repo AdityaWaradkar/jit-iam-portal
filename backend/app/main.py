@@ -67,27 +67,29 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 async def _backfill_audit_writer() -> None:
     from sqlalchemy import select
-
     from app.db.models import AuditEvent
 
-    async with AsyncSessionLocal() as session:
-        result = await session.execute(
-            select(AuditEvent).order_by(AuditEvent.created_at.asc())
-        )
-        events = list(result.scalars().all())
-        for event in events:
-            audit_writer.enqueue(
-                {
-                    "id": str(event.id),
-                    "event_type": event.event_type,
-                    "actor_id": str(event.actor_id) if event.actor_id else None,
-                    "request_id": str(event.request_id) if event.request_id else None,
-                    "lease_id": str(event.lease_id) if event.lease_id else None,
-                    "payload": event.payload,
-                    "created_at": event.created_at.isoformat(),
-                }
+    try:
+        async with AsyncSessionLocal() as session:
+            result = await session.execute(
+                select(AuditEvent).order_by(AuditEvent.created_at.asc())
             )
-        logger.info("audit_writer_backfilled", count=len(events))
+            events = list(result.scalars().all())
+            for event in events:
+                audit_writer.enqueue(
+                    {
+                        "id": str(event.id),
+                        "event_type": event.event_type,
+                        "actor_id": str(event.actor_id) if event.actor_id else None,
+                        "request_id": str(event.request_id) if event.request_id else None,
+                        "lease_id": str(event.lease_id) if event.lease_id else None,
+                        "payload": event.payload,
+                        "created_at": event.created_at.isoformat(),
+                    }
+                )
+            logger.info("audit_writer_backfilled", count=len(events))
+    except Exception as exc:
+        logger.warning("audit_writer_backfill_failed", error=str(exc))
 
 app = FastAPI(
     title=settings.app_name,
