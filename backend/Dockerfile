@@ -14,7 +14,7 @@ RUN apt-get update \
 
 # Install Python dependencies first (better Docker layer caching)
 COPY pyproject.toml ./
-RUN pip install --upgrade pip \
+RUN pip install --upgrade pip setuptools wheel \
     && pip install .
 
 # Copy application code and migration scaffolding
