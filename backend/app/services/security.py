@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from uuid import UUID
 
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -123,7 +124,7 @@ async def _build_leaderboard(db: AsyncSession) -> list[TopRequester]:
     rows = result.all()
 
     actor_ids = [row[0] for row in rows if row[0] is not None]
-    names: dict = {}
+    names: dict[UUID, str] = {}
     if actor_ids:
         users_result = await db.execute(
             select(User.id, User.full_name).where(User.id.in_(actor_ids))

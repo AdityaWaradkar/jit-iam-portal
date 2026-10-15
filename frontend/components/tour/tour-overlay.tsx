@@ -121,23 +121,71 @@ export function TourOverlay({ active, onFinish, onSkip }: Props) {
 
   return (
     <>
-      {/* Overlay with a hole for the target element. */}
+      {/* Overlay with a hole for the target element. The hole is
+          created by rendering four dark panels around the target
+          rect. The target area itself is not covered, so it renders
+          at full brightness. */}
       <div
-        className="pointer-events-auto fixed inset-0 z-[9990] bg-black/70"
+        className="pointer-events-auto fixed inset-0 z-[9990]"
         onClick={(e) => e.stopPropagation()}
       >
-        {targetRect && (
-          <div
-            className="absolute rounded-md ring-2 ring-white/80 transition-all duration-200"
-            style={{
-              top: targetRect.top - padding,
-              left: targetRect.left - padding,
-              width: targetRect.width + padding * 2,
-              height: targetRect.height + padding * 2,
-              boxShadow: "0 0 0 9999px rgba(0, 0, 0, 0.7)",
-              backgroundColor: "transparent",
-            }}
-          />
+        {targetRect ? (
+          <>
+            {/* Top panel */}
+            <div
+              className="absolute bg-black/70"
+              style={{
+                top: 0,
+                left: 0,
+                right: 0,
+                height: Math.max(0, targetRect.top - padding),
+              }}
+            />
+            {/* Bottom panel */}
+            <div
+              className="absolute bg-black/70"
+              style={{
+                top: targetRect.top + targetRect.height + padding,
+                left: 0,
+                right: 0,
+                bottom: 0,
+              }}
+            />
+            {/* Left panel */}
+            <div
+              className="absolute bg-black/70"
+              style={{
+                top: Math.max(0, targetRect.top - padding),
+                left: 0,
+                width: Math.max(0, targetRect.left - padding),
+                height: targetRect.height + padding * 2,
+              }}
+            />
+            {/* Right panel */}
+            <div
+              className="absolute bg-black/70"
+              style={{
+                top: Math.max(0, targetRect.top - padding),
+                left: targetRect.left + targetRect.width + padding,
+                right: 0,
+                height: targetRect.height + padding * 2,
+              }}
+            />
+            {/* Highlight ring around the target */}
+            <div
+              className="absolute rounded-md ring-2 ring-white/90 transition-all duration-200"
+              style={{
+                top: targetRect.top - padding,
+                left: targetRect.left - padding,
+                width: targetRect.width + padding * 2,
+                height: targetRect.height + padding * 2,
+                pointerEvents: "none",
+              }}
+            />
+          </>
+        ) : (
+          /* No target: dim the entire screen */
+          <div className="absolute inset-0 bg-black/70" />
         )}
       </div>
 
