@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { setLatestCredential } from "@/lib/credentials-store";
 
 import { CredentialModal } from "@/components/credentials/credential-modal";
 import { Badge } from "@/components/ui/badge";
@@ -40,6 +41,7 @@ export function RequestDetail({ request }: { request: AccessRequest }) {
       const data = await issueCredentials(request.id);
       setCredential(data);
       setLeaseId(data.lease_id);
+      setLatestCredential(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Issuance failed");
     } finally {

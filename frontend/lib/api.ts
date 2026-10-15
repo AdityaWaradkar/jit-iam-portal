@@ -286,3 +286,27 @@ export function listLeases(): Promise<LeaseList> {
 export function getLease(id: string): Promise<Lease> {
   return apiFetch<Lease>(`/api/v1/leases/${id}`);
 }
+
+// --- Terminal ---
+
+export type TerminalResponse = {
+  exit_code: number;
+  stdout: string;
+  stderr: string;
+};
+
+export type TerminalRequest = {
+  access_key_id: string;
+  secret_access_key: string;
+  session_token: string;
+  command: string;
+};
+
+export function runTerminalCommand(
+  payload: TerminalRequest,
+): Promise<TerminalResponse> {
+  return apiFetch<TerminalResponse>("/api/v1/terminal/run", {
+    method: "POST",
+    body: payload,
+  });
+}

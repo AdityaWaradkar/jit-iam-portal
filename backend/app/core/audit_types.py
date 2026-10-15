@@ -9,6 +9,7 @@ class AuditEventType:
     LEASE_REVOKED = "lease.revoked"
     USER_LOGGED_IN = "user.logged_in"
     DEMO_RESET = "demo.reset"
+    CREDENTIAL_USED = "credential.used"
 
     ALL = {
         REQUEST_CREATED,
@@ -21,4 +22,5 @@ class AuditEventType:
         LEASE_REVOKED,
         USER_LOGGED_IN,
         DEMO_RESET,
+        CREDENTIAL_USED,
     }
