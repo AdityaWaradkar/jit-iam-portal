@@ -52,3 +52,6 @@ addopts = "-ra --strict-markers"
 "app/api/**/*.py" = ["B008"]
 "alembic/versions/*.py" = ["E501", "I001", "UP007", "UP035"]
 "app/db/models/*.py" = ["UP037", "TC001", "TC002", "TC003"]
+
+[tool.setuptools.packages.find]
+include = ["app*"]
