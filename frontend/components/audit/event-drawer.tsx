@@ -1,6 +1,5 @@
 "use client";
 
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import type { AuditEvent } from "@/lib/api";
 import { eventTypeLabel } from "@/lib/audit-types";

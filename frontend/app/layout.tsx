@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 
 import "./globals.css";
 import { AuthProvider } from "@/components/auth/auth-provider";
+import { PersonaTransition } from "@/components/auth/persona-transition";
 import { AppShell } from "@/components/layout/app-shell";
 import { TourProvider } from "@/components/tour/tour-provider";
 
@@ -24,6 +25,7 @@ export default function RootLayout({
         <AuthProvider>
           <TourProvider>
             <AppShell>{children}</AppShell>
+            <PersonaTransition />
           </TourProvider>
         </AuthProvider>
       </body>

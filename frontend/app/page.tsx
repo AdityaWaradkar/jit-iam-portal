@@ -20,6 +20,7 @@ import {
   type DashboardSummary,
   type SecurityOverview,
 } from "@/lib/api";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 
 export default function DashboardPage() {
   const { user, ready } = useAuth();
@@ -98,9 +99,7 @@ function PersonalDashboardView() {
   }
 
   if (loading && !summary) {
-    return (
-      <p className="text-sm text-muted-foreground">Loading dashboard...</p>
-    );
+    return <LoadingSkeleton rows={5} />;
   }
 
   if (error && !summary) {
@@ -168,11 +167,7 @@ function SecurityOverviewView() {
   }, []);
 
   if (loading) {
-    return (
-      <p className="text-sm text-muted-foreground">
-        Loading security overview...
-      </p>
-    );
+    return <LoadingSkeleton rows={6} />;
   }
 
   if (error && !overview) {

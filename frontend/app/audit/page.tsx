@@ -15,6 +15,7 @@ import {
   type AuditStats,
 } from "@/lib/api";
 import { eventsToCsv, downloadCsv } from "@/lib/csv";
+import { LoadingSkeleton } from "@/components/ui/loading-skeleton";
 
 const DEFAULT_LIMIT = 50;
 
@@ -127,7 +128,7 @@ export default function AuditPage() {
       )}
 
       {loading ? (
-        <p className="text-sm text-muted-foreground">Loading events...</p>
+        <LoadingSkeleton rows={6} />
       ) : (
         <div data-tour="audit-table">
           <EventTable

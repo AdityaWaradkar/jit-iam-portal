@@ -155,47 +155,6 @@ export function Terminal({ credentials }: Props) {
     term.write(PROMPT);
   }, [credentials]);
 
-  async function execute(term: XTerm, command: string) {
-    const cred = credentialRef.current;
-    if (!cred) {
-      term.writeln(
-        "\x1b[31mNo credentials loaded. Issue one from the Requests page first.\x1b[0m",
-      );
-      term.write(PROMPT);
-      return;
-    }
-
-    if (command === "clear") {
-      term.clear();
-      term.write(PROMPT);
-      return;
-    }
-
-    try {
-      const response = await runTerminalCommand({
-        access_key_id: cred.access_key_id,
-        secret_access_key: cred.secret_access_key,
-        session_token: cred.session_token,
-        command,
-      });
-
-      if (response.stdout) {
-        term.writeln(response.stdout.replace(/\n/g, "\r\n"));
-      }
-      if (response.stderr) {
-        term.writeln(
-          `\x1b[31m${response.stderr.replace(/\n/g, "\r\n")}\x1b[0m`,
-        );
-      }
-    } catch (err) {
-      term.writeln(
-        `\x1b[31mTerminal error: ${err instanceof Error ? err.message : "unknown"
-        }\x1b[0m`,
-      );
-    }
-    term.write(PROMPT);
-  }
-
   return (
     <div
       ref={containerRef}
