@@ -145,7 +145,7 @@ Once running:
 
 The portal provides three personas. Each demonstrates a different role in the workflow.
 
-1. Log in as **Alex Rivera (engineer)** and submit a staging request. It auto approves.
+1. Log in as **Aditya Waradkar (engineer)** and submit a staging request. It auto approves.
 2. Click the request, issue credentials, and copy the ephemeral AWS keys.
 3. Navigate to **Leases** and load the credential into the terminal.
 4. Run `aws sts get-caller-identity` to see the assumed role.
