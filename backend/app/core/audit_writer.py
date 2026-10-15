@@ -20,8 +20,8 @@ class AuditWriter:
     """
 
     def __init__(self) -> None:
-        self._queue: asyncio.Queue[dict] = asyncio.Queue()
-        self._task: asyncio.Task | None = None
+        self._queue: asyncio.Queue[dict[str, object]] = asyncio.Queue()
+        self._task: asyncio.Task[None] | None = None
         self._stop = asyncio.Event()
 
     def start(self) -> None:
@@ -43,7 +43,7 @@ class AuditWriter:
             self._task = None
         logger.info("audit_writer_stopped")
 
-    def enqueue(self, event: dict) -> None:
+    def enqueue(self, event: dict[str, object]) -> None:
         try:
             self._queue.put_nowait(event)
         except asyncio.QueueFull:
@@ -62,7 +62,7 @@ class AuditWriter:
             except Exception as exc:
                 logger.error("audit_writer_failed", error=str(exc))
 
-    async def _write_batch(self, events: list[dict]) -> None:
+    async def _write_batch(self, events: list[dict[str, object]]) -> None:
         if not events:
             return
         date = datetime.now(UTC).strftime("%Y-%m-%d")
